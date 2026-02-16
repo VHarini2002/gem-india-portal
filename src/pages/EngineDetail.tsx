@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockEngines, mockShipments, mockParts, mockFinancials, getPhases } from '@/data/mockData';
+import { mockEngines, mockShipments, mockParts, mockFinancials, getPhases, Part } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import ParticleBackground from '@/components/ParticleBackground';
 import AnimatedCounter from '@/components/AnimatedCounter';
+import PartLifecycleDialog from '@/components/PartLifecycleDialog';
+import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, LogOut, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: Package },
@@ -24,6 +26,8 @@ const EngineDetail = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [partsFilter, setPartsFilter] = useState<'all' | 'Scrap' | 'Repair' | 'Sell'>('all');
+  const [selectedPart, setSelectedPart] = useState<Part | null>(null);
+  const [isPartDialogOpen, setIsPartDialogOpen] = useState(false);
 
   // Parse WO-XXXX-XXX-ESN-XXXXXX from URL
   const engine = mockEngines.find(e => `${e.workOrder}-${e.esn}` === id);
@@ -222,7 +226,27 @@ const EngineDetail = () => {
                 <tbody>
                   {filteredParts.slice(0, 20).map((p, i) => (
                     <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-primary/5">
-                      <td className="py-3 px-3 neon-text">{p.partNumber}</td>
+                      <td className="py-3 px-3">
+                        {p.category === 'Scrap' ? (
+                          <TooltipProvider>
+                            <RadixTooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-muted-foreground/60 cursor-not-allowed">{p.partNumber}</span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-card border-border">
+                                <p className="text-xs">Scrap parts have no further lifecycle</p>
+                              </TooltipContent>
+                            </RadixTooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <button
+                            onClick={() => { setSelectedPart(p); setIsPartDialogOpen(true); }}
+                            className="neon-text hover:underline hover:drop-shadow-[0_0_6px_hsl(200,100%,50%,0.5)] transition-all cursor-pointer text-left"
+                          >
+                            {p.partNumber}
+                          </button>
+                        )}
+                      </td>
                       <td className="py-3 px-3 text-foreground/80">{p.serialNumber}</td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded text-xs ${p.category === 'Scrap' ? 'bg-destructive/20 text-destructive' : p.category === 'Repair' ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'}`}>
@@ -321,7 +345,7 @@ const EngineDetail = () => {
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
                     {pieData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="transparent" />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
+                  <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
                   <Legend wrapperStyle={{ fontFamily: 'Rajdhani', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
@@ -334,7 +358,7 @@ const EngineDetail = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
                   <XAxis dataKey="name" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
                   <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
+                  <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
                   <Bar dataKey="value" fill="hsl(200, 100%, 50%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -348,7 +372,7 @@ const EngineDetail = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
                     <XAxis dataKey="month" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
                     <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                    <Tooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
+                    <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
                     <Line type="monotone" dataKey="cost" stroke="hsl(185, 100%, 55%)" strokeWidth={2} dot={{ fill: 'hsl(185, 100%, 55%)', r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -458,6 +482,8 @@ const EngineDetail = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <PartLifecycleDialog part={selectedPart} open={isPartDialogOpen} onOpenChange={setIsPartDialogOpen} />
     </div>
   );
 };
