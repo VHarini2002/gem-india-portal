@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ["Orbitron", "sans-serif"],
-        body: ["Rajdhani", "sans-serif"],
-        mono: ["Inter", "monospace"],
+        heading: ["Exo 2", "sans-serif"],
+        body: ["Chakra Petch", "sans-serif"],
+        mono: ["Space Grotesk", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",

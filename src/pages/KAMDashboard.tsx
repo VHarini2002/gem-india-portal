@@ -1,16 +1,19 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockEngines, mockFinancials, mockParts } from '@/data/mockData';
 import ParticleBackground from '@/components/ParticleBackground';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import EngineCard from '@/components/EngineCard';
+import PartsCatalog from '@/components/PartsCatalog';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp } from 'lucide-react';
+import { LogOut, Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, Package } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const KAMDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const handleLogout = () => { logout(); navigate('/'); };
 
   const totalEngines = mockEngines.length;
@@ -52,8 +55,11 @@ const KAMDashboard = () => {
             <span className="hidden sm:block h-6 w-px bg-border/50" />
             <span className="hidden sm:block font-body text-sm text-muted-foreground">KAM Dashboard</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="font-body text-sm text-foreground/80">{user?.name}</span>
+            <button onClick={() => setCatalogOpen(true)} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
+              <Package className="w-3 h-3" /> Parts Catalog
+            </button>
             <button onClick={handleLogout} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
               <LogOut className="w-3 h-3" /> Logout
             </button>
@@ -126,11 +132,11 @@ const KAMDashboard = () => {
                     <Cell key={i} fill={entry.color} stroke="transparent" />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }}
-                  itemStyle={{ color: 'hsl(210, 40%, 92%)' }}
-                />
-                <Legend wrapperStyle={{ fontFamily: 'Rajdhani', fontSize: '12px' }} />
+                 <Tooltip
+                   contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Chakra Petch' }}
+                   itemStyle={{ color: 'hsl(210, 40%, 92%)' }}
+                 />
+                 <Legend wrapperStyle={{ fontFamily: 'Chakra Petch', fontSize: '12px' }} />
               </PieChart>
             </ResponsiveContainer>
           </motion.div>
@@ -144,14 +150,14 @@ const KAMDashboard = () => {
             <h3 className="font-heading text-sm neon-text tracking-wider mb-4">REVENUE PER CLIENT ($M)</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={revenueByClient}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
-                <XAxis dataKey="name" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 12 }} />
-                <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }}
-                  itemStyle={{ color: 'hsl(210, 40%, 92%)' }}
-                  formatter={(val: number) => [`$${val.toFixed(2)}M`, 'Revenue']}
-                />
+                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
+                 <XAxis dataKey="name" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Chakra Petch', fontSize: 12 }} />
+                 <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Chakra Petch', fontSize: 12 }} />
+                 <Tooltip
+                   contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Chakra Petch' }}
+                   itemStyle={{ color: 'hsl(210, 40%, 92%)' }}
+                   formatter={(val: number) => [`$${val.toFixed(2)}M`, 'Revenue']}
+                 />
                 <Bar dataKey="revenue" fill="hsl(200, 100%, 50%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -166,6 +172,7 @@ const KAMDashboard = () => {
           ))}
         </div>
       </div>
+      <PartsCatalog open={catalogOpen} onClose={() => setCatalogOpen(false)} />
     </div>
   );
 };
