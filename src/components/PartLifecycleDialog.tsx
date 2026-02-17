@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, MapPin, Plane, Ship, Car, CheckCircle, Clock, Circle } from 'lucide-react';
+import { X, FileText, MapPin, Plane, Ship, Car, CheckCircle, Clock, Circle, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -43,12 +44,25 @@ const repairDocs = [
   { name: 'Logistics Documents', date: '2024-10-02' },
 ];
 
-const sellDocs = [
+const certDocs = [
   { name: 'FAA 8130-3', date: '2024-10-01' },
   { name: 'EASA Form 1', date: '2024-10-01' },
   { name: 'Traceability Report', date: '2024-09-28' },
   { name: 'Shop Release Certificate', date: '2024-10-03' },
+];
+
+const saleDocs = [
   { name: 'Sale Invoice', date: '2024-11-15' },
+  { name: 'Purchase Order', date: '2024-11-10' },
+  { name: 'Proforma Invoice', date: '2024-11-08' },
+  { name: 'Shipping Invoice', date: '2024-11-20' },
+];
+
+const reportDocs = [
+  { name: 'Condition Report', date: '2024-09-25' },
+  { name: 'Valuation Report', date: '2024-09-30' },
+  { name: 'Market Analysis', date: '2024-10-02' },
+  { name: 'Compliance Summary', date: '2024-10-04' },
 ];
 
 const StatusIcon = ({ status }: { status: 'Completed' | 'Active' | 'Pending' }) => {
@@ -87,24 +101,31 @@ const TimelineSection = ({ stages }: { stages: ReturnType<typeof getRepairTimeli
   </div>
 );
 
-const DocumentGrid = ({ docs }: { docs: typeof repairDocs }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    {docs.map((d, i) => (
-      <motion.div
-        key={d.name}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: i * 0.06 }}
-        className="glass-card p-3 rounded-lg flex items-center gap-3 hover:shadow-[0_0_12px_hsl(200,100%,50%,0.15)] transition-shadow cursor-pointer group"
-      >
-        <FileText className="w-5 h-5 text-primary group-hover:text-accent transition-colors flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-heading truncate">{d.name}</p>
-          <p className="text-[10px] text-muted-foreground font-body">{d.date ?? 'Pending'}</p>
-        </div>
-        <button className="btn-neon py-1 px-2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">View</button>
-      </motion.div>
-    ))}
+const DocumentGrid = ({ docs, showUpload = false }: { docs: typeof repairDocs; showUpload?: boolean }) => (
+  <div className="space-y-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {docs.map((d, i) => (
+        <motion.div
+          key={d.name}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.06 }}
+          className="glass-card p-3 rounded-lg flex items-center gap-3 hover:shadow-[0_0_12px_hsl(200,100%,50%,0.15)] transition-shadow cursor-pointer group"
+        >
+          <FileText className="w-5 h-5 text-primary group-hover:text-accent transition-colors flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-heading truncate">{d.name}</p>
+            <p className="text-[10px] text-muted-foreground font-body">{d.date ?? 'Pending'}</p>
+          </div>
+          <button className="btn-neon py-1 px-2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">View</button>
+        </motion.div>
+      ))}
+    </div>
+    {showUpload && (
+      <button className="btn-neon py-2 px-4 text-xs w-full flex items-center justify-center gap-2">
+        <Upload className="w-3 h-3" /> Upload Document
+      </button>
+    )}
   </div>
 );
 
@@ -160,7 +181,6 @@ const PartLifecycleDialog = ({ part, open, onOpenChange }: PartLifecycleDialogPr
 /* ─── REPAIR ─── */
 const RepairContent = ({ part, transitProgress }: { part: Part; transitProgress: number }) => (
   <>
-    {/* Summary */}
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       <InfoPill label="Part Number" value={part.partNumber} highlight />
       <InfoPill label="Serial Number" value={part.serialNumber} />
@@ -170,7 +190,6 @@ const RepairContent = ({ part, transitProgress }: { part: Part; transitProgress:
       <InfoPill label="Est. Completion" value={part.eta ?? '—'} />
     </div>
 
-    {/* Transport */}
     <SectionHeading>Transport Details</SectionHeading>
     <div className="glass-card-glow p-4 rounded-xl space-y-3">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-body">
@@ -191,61 +210,85 @@ const RepairContent = ({ part, transitProgress }: { part: Part; transitProgress:
       </div>
     </div>
 
-    {/* Timeline */}
     <SectionHeading>Repair Process Timeline</SectionHeading>
     <TimelineSection stages={getRepairTimeline()} />
 
-    {/* Documents */}
     <SectionHeading>Repair Documents</SectionHeading>
-    <DocumentGrid docs={repairDocs} />
+    <DocumentGrid docs={repairDocs} showUpload />
   </>
 );
 
 /* ─── SELL ─── */
-const SellContent = ({ part, isSold }: { part: Part; isSold: boolean }) => (
-  <>
-    {/* Summary */}
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      <InfoPill label="Part Number" value={part.partNumber} highlight />
-      <InfoPill label="Serial Number" value={part.serialNumber} />
-      <InfoPill label="Condition" value={part.condition} />
-      <InfoPill label="LLP Status" value={part.llpStatus ?? '—'} />
-      <InfoPill label="Certification" value={part.certification ?? '—'} />
-      <InfoPill label="Stock Location" value={part.stockLocation ?? '—'} />
-      <InfoPill label="Availability" value={part.saleStatus ?? '—'} />
-      <InfoPill label="Price" value={`$${part.price?.toLocaleString() ?? '—'}`} />
-      {isSold && <InfoPill label="Buyer" value="AeroParts Global Ltd" />}
-    </div>
+const SellContent = ({ part, isSold }: { part: Part; isSold: boolean }) => {
+  const [docTab, setDocTab] = useState<'certifications' | 'sale_docs' | 'reports'>('certifications');
 
-    {/* Sale Timeline */}
-    <SectionHeading>Sale Process Timeline</SectionHeading>
-    <TimelineSection stages={getSellTimeline(isSold)} />
+  const docTabs = [
+    { id: 'certifications' as const, label: 'Certifications' },
+    { id: 'sale_docs' as const, label: 'Sale Documents' },
+    { id: 'reports' as const, label: 'Reports' },
+  ];
 
-    {/* Cert Docs */}
-    <SectionHeading>Certification Documents</SectionHeading>
-    <DocumentGrid docs={sellDocs} />
+  const docMap = {
+    certifications: certDocs,
+    sale_docs: saleDocs,
+    reports: reportDocs,
+  };
 
-    {/* Commercial */}
-    <SectionHeading>Commercial Details</SectionHeading>
-    <div className="glass-card-glow p-4 rounded-xl">
-      {isSold ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-body">
-          <div><p className="text-muted-foreground">Sale Price</p><p className="neon-text font-heading">${part.price?.toLocaleString()}</p></div>
-          <div><p className="text-muted-foreground">Sale Date</p><p>2024-11-15</p></div>
-          <div><p className="text-muted-foreground">Buyer</p><p>AeroParts Global Ltd</p></div>
-          <div><p className="text-muted-foreground">Logistics</p><div className="flex items-center gap-1"><Ship className="w-3 h-3" /> Sea</div></div>
-          <div><p className="text-muted-foreground">Delivery</p><p className="text-success">Confirmed</p></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-body">
-          <div><p className="text-muted-foreground">Asking Price</p><p className="neon-text font-heading">${part.price?.toLocaleString()}</p></div>
-          <div><p className="text-muted-foreground">Last Inspection</p><p>2024-10-01</p></div>
-          <div><p className="text-muted-foreground">Est. Dispatch</p><p>5–7 business days</p></div>
-        </div>
-      )}
-    </div>
-  </>
-);
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <InfoPill label="Part Number" value={part.partNumber} highlight />
+        <InfoPill label="Serial Number" value={part.serialNumber} />
+        <InfoPill label="Condition" value={part.condition} />
+        <InfoPill label="LLP Status" value={part.llpStatus ?? '—'} />
+        <InfoPill label="Certification" value={part.certification ?? '—'} />
+        <InfoPill label="Stock Location" value={part.stockLocation ?? '—'} />
+        <InfoPill label="Availability" value={part.saleStatus ?? '—'} />
+        <InfoPill label="Price" value={`$${part.price?.toLocaleString() ?? '—'}`} />
+        {isSold && <InfoPill label="Buyer" value="AeroParts Global Ltd" />}
+      </div>
+
+      <SectionHeading>Sale Process Timeline</SectionHeading>
+      <TimelineSection stages={getSellTimeline(isSold)} />
+
+      {/* Tabbed Document Section */}
+      <SectionHeading>Documents & Reports</SectionHeading>
+      <div className="flex gap-1 mb-4">
+        {docTabs.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setDocTab(t.id)}
+            className={`px-3 py-1.5 rounded-lg font-heading text-[10px] tracking-wider uppercase transition-all ${
+              docTab === t.id ? 'btn-neon-solid' : 'btn-neon'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <DocumentGrid docs={docMap[docTab]} showUpload />
+
+      <SectionHeading>Commercial Details</SectionHeading>
+      <div className="glass-card-glow p-4 rounded-xl">
+        {isSold ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-body">
+            <div><p className="text-muted-foreground">Sale Price</p><p className="neon-text font-heading">${part.price?.toLocaleString()}</p></div>
+            <div><p className="text-muted-foreground">Sale Date</p><p>2024-11-15</p></div>
+            <div><p className="text-muted-foreground">Buyer</p><p>AeroParts Global Ltd</p></div>
+            <div><p className="text-muted-foreground">Logistics</p><div className="flex items-center gap-1"><Ship className="w-3 h-3" /> Sea</div></div>
+            <div><p className="text-muted-foreground">Delivery</p><p className="text-success">Confirmed</p></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-body">
+            <div><p className="text-muted-foreground">Asking Price</p><p className="neon-text font-heading">${part.price?.toLocaleString()}</p></div>
+            <div><p className="text-muted-foreground">Last Inspection</p><p>2024-10-01</p></div>
+            <div><p className="text-muted-foreground">Est. Dispatch</p><p>5–7 business days</p></div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
 
 export default PartLifecycleDialog;
 export { PartLifecycleDialog };
