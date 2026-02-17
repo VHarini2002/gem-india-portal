@@ -7,10 +7,10 @@ import ParticleBackground from '@/components/ParticleBackground';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import PartLifecycleDialog from '@/components/PartLifecycleDialog';
 import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, LogOut, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car } from 'lucide-react';
+import { ArrowLeft, LogOut, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car, HelpCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 
-const tabs = [
+const allTabs = [
   { id: 'overview', label: 'Overview', icon: Package },
   { id: 'logistics', label: 'Logistics', icon: Truck },
   { id: 'service', label: 'Service Process', icon: Settings },
@@ -37,6 +37,8 @@ const EngineDetail = () => {
   const parts = mockParts.filter(p => p.engineId === engine.id);
   const financial = mockFinancials.find(f => f.engineId === engine.id);
   const phases = getPhases(engine.serviceType);
+  const isLeaseStorage = engine.serviceType === 'Lease Storage';
+  const tabs = isLeaseStorage ? allTabs.filter(t => t.id !== 'parts') : allTabs;
   const currentPhaseIndex = phases.indexOf(engine.currentPhase);
 
   const filteredParts = partsFilter === 'all' ? parts : parts.filter(p => p.category === partsFilter);
@@ -294,7 +296,35 @@ const EngineDetail = () => {
         );
 
       case 'financial':
-        if (!financial) return <p className="text-muted-foreground font-body">No financial data for storage engines.</p>;
+        if (isLeaseStorage) {
+          const storageDays = 198;
+          const costPerDay = 150;
+          const totalStorage = storageDays * costPerDay;
+          const logCost = 12000;
+          const storageItems = [
+            { label: 'Storage Days', value: storageDays, color: 'neon-text-cyan' },
+            { label: 'Cost Per Day', value: costPerDay, prefix: '$', color: 'neon-text' },
+            { label: 'Total Storage Cost', value: totalStorage, prefix: '$', color: 'status-transit' },
+            { label: 'Logistics Cost', value: logCost, prefix: '$', color: 'neon-text' },
+            { label: 'Total Accrued', value: totalStorage + logCost, prefix: '$', color: 'status-active' },
+            { label: 'Payment Status', value: 0, color: 'status-transit' },
+          ];
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {storageItems.map((item, i) => (
+                <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
+                  <p className="font-body text-xs text-muted-foreground">{item.label}</p>
+                  {item.label === 'Payment Status' ? (
+                    <p className={`font-heading text-lg mt-1 ${item.color}`}>Pending</p>
+                  ) : (
+                    <AnimatedCounter target={item.value} prefix={item.prefix} className={`font-heading text-lg ${item.color}`} />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          );
+        }
+        if (!financial) return <p className="text-muted-foreground font-body">No financial data available.</p>;
         return (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -420,8 +450,11 @@ const EngineDetail = () => {
             </button>
             <h1 className="font-heading text-xl neon-text tracking-wider">GEM INDIA</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="font-body text-sm text-foreground/80">{user?.name}</span>
+            <button onClick={() => navigate('/help')} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
+              <HelpCircle className="w-3 h-3" /> Help
+            </button>
             <button onClick={handleLogout} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
               <LogOut className="w-3 h-3" /> Logout
             </button>
