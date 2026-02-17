@@ -127,7 +127,7 @@ const PartLifecycleDialog = ({ part, open, onOpenChange }: PartLifecycleDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 border-0 bg-transparent shadow-none overflow-hidden sm:rounded-xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 border-0 bg-transparent shadow-none overflow-hidden sm:rounded-xl">
         <motion.div
           initial={{ scale: 0.92, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -142,7 +142,7 @@ const PartLifecycleDialog = ({ part, open, onOpenChange }: PartLifecycleDialogPr
             </DialogTitle>
           </div>
 
-          <ScrollArea className="max-h-[70vh]">
+          <ScrollArea className="max-h-[65vh] overflow-y-auto">
             <div className="p-5 space-y-1">
               {part.category === 'Repair' ? (
                 <RepairContent part={part} transitProgress={transitProgress} />

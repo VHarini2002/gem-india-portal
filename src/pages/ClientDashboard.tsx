@@ -4,9 +4,8 @@ import { mockEngines } from '@/data/mockData';
 import EngineCard from '@/components/EngineCard';
 import ParticleBackground from '@/components/ParticleBackground';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Search } from 'lucide-react';
+import { LogOut, Search, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
-import engineHero from '@/assets/engine-hero.jpg';
 
 const ClientDashboard = () => {
   const { user, logout } = useAuth();
@@ -37,8 +36,11 @@ const ClientDashboard = () => {
             <span className="hidden sm:block h-6 w-px bg-border/50" />
             <span className="hidden sm:block font-body text-sm text-muted-foreground">Engine Asset Lifecycle</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="font-body text-sm text-foreground/80">{user?.name}</span>
+            <button onClick={() => navigate('/help')} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
+              <HelpCircle className="w-3 h-3" /> Help
+            </button>
             <button onClick={handleLogout} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
               <LogOut className="w-3 h-3" /> Logout
             </button>
@@ -50,7 +52,14 @@ const ClientDashboard = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-8">
         <div className="glass-card-glow rounded-2xl overflow-hidden mb-8">
           <div className="relative h-48 md:h-56">
-            <img src={engineHero} alt="Engine" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-30"
+              src="https://videos.pexels.com/video-files/2098989/2098989-sd_640_360_30fps.mp4"
+            />
             <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
             <div className="relative z-10 h-full flex items-center px-8">
               <div>
