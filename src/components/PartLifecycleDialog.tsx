@@ -80,19 +80,21 @@ const TimelineSection = ({ stages }: { stages: ReturnType<typeof getRepairTimeli
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: i * 0.08 }}
-        className={`relative flex items-start gap-4 py-3 ${s.status === 'Active' ? 'drop-shadow-[0_0_8px_hsl(200,100%,50%,0.4)]' : ''}`}
+        className={`relative flex items-start gap-4 py-3`}
       >
         <div className="absolute left-[-23px]">
           <StatusIcon status={s.status} />
         </div>
         <div className="flex-1">
-          <p className={`font-heading text-sm tracking-wide ${s.status === 'Active' ? 'neon-text' : s.status === 'Completed' ? 'text-foreground' : 'text-muted-foreground/60'}`}>
+          <p className={`font-heading text-sm font-semibold ${s.status === 'Active' ? 'text-primary' : s.status === 'Completed' ? 'text-foreground' : 'text-muted-foreground/60'}`}>
             {s.stage}
           </p>
           <p className="text-xs font-body text-muted-foreground mt-0.5">{s.date ?? '—'}</p>
         </div>
-        <span className={`text-[10px] font-heading uppercase tracking-widest px-2 py-0.5 rounded ${
-          s.status === 'Completed' ? 'bg-success/15 text-success' : s.status === 'Active' ? 'bg-primary/20 neon-text' : 'bg-secondary text-muted-foreground/50'
+        <span className={`text-[10px] font-heading font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
+          s.status === 'Completed' ? 'bg-green-50 text-success border border-green-200'
+          : s.status === 'Active' ? 'bg-blue-50 text-primary border border-blue-200'
+          : 'bg-muted text-muted-foreground/50'
         }`}>
           {s.status}
         </span>
@@ -110,19 +112,19 @@ const DocumentGrid = ({ docs, showUpload = false }: { docs: typeof repairDocs; s
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.06 }}
-          className="glass-card p-3 rounded-lg flex items-center gap-3 hover:shadow-[0_0_12px_hsl(200,100%,50%,0.15)] transition-shadow cursor-pointer group"
+          className="bg-white/60 border border-border/40 p-3 rounded-xl flex items-center gap-3 hover:bg-white/80 transition-colors cursor-pointer group"
         >
-          <FileText className="w-5 h-5 text-primary group-hover:text-accent transition-colors flex-shrink-0" />
+          <FileText className="w-4 h-4 text-primary flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-heading truncate">{d.name}</p>
+            <p className="text-xs font-heading font-semibold text-foreground truncate">{d.name}</p>
             <p className="text-[10px] text-muted-foreground font-body">{d.date ?? 'Pending'}</p>
           </div>
-          <button className="btn-neon py-1 px-2 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">View</button>
+          <button className="btn-secondary py-1 px-2 text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">View</button>
         </motion.div>
       ))}
     </div>
     {showUpload && (
-      <button className="btn-neon py-2 px-4 text-xs w-full flex items-center justify-center gap-2">
+      <button className="btn-secondary py-2 px-4 text-xs w-full flex items-center justify-center gap-2 rounded-xl">
         <Upload className="w-3 h-3" /> Upload Document
       </button>
     )}
@@ -130,14 +132,14 @@ const DocumentGrid = ({ docs, showUpload = false }: { docs: typeof repairDocs; s
 );
 
 const InfoPill = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
-  <div className="glass-card p-3 rounded-lg">
+  <div className="bg-white/50 border border-border/40 p-3 rounded-xl">
     <p className="text-[10px] font-body text-muted-foreground uppercase tracking-wider">{label}</p>
-    <p className={`text-sm font-heading mt-0.5 ${highlight ? 'neon-text' : ''}`}>{value}</p>
+    <p className={`text-sm font-heading font-semibold mt-0.5 ${highlight ? 'text-primary' : 'text-foreground'}`}>{value}</p>
   </div>
 );
 
 const SectionHeading = ({ children }: { children: React.ReactNode }) => (
-  <h4 className="font-heading text-xs neon-text-cyan tracking-[0.2em] uppercase mb-4 mt-6 border-b border-border/30 pb-2">{children}</h4>
+  <h4 className="font-heading text-xs font-bold text-primary uppercase tracking-wider mb-4 mt-6 border-b border-border/40 pb-2">{children}</h4>
 );
 
 const PartLifecycleDialog = ({ part, open, onOpenChange }: PartLifecycleDialogProps) => {
@@ -148,17 +150,17 @@ const PartLifecycleDialog = ({ part, open, onOpenChange }: PartLifecycleDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 border-0 bg-transparent shadow-none overflow-hidden sm:rounded-xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 border-0 bg-transparent shadow-none overflow-hidden sm:rounded-2xl">
         <motion.div
-          initial={{ scale: 0.92, opacity: 0 }}
+          initial={{ scale: 0.94, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.92, opacity: 0 }}
+          exit={{ scale: 0.94, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative bg-[hsl(var(--card))]/95 backdrop-blur-xl border border-primary/30 rounded-xl shadow-[0_0_40px_hsl(200,100%,50%,0.12)]"
+          className="relative glass-card-glow rounded-2xl overflow-hidden"
         >
           {/* Header */}
-          <div className="p-5 border-b border-border/30">
-            <DialogTitle className="font-heading text-base tracking-wider neon-text pr-8">
+          <div className="p-5 border-b border-border/40 bg-white/30">
+            <DialogTitle className="font-heading text-base font-bold text-foreground pr-8">
               {part.category === 'Repair' ? `Repair Lifecycle – ${part.partNumber}` : `Sales & Certification – ${part.partNumber}`}
             </DialogTitle>
           </div>

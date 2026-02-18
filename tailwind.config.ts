@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ["Exo 2", "sans-serif"],
-        body: ["Chakra Petch", "sans-serif"],
-        mono: ["Space Grotesk", "monospace"],
+        heading: ["Plus Jakarta Sans", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+        mono: ["Inter", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,17 +52,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        neon: {
-          blue: "hsl(var(--neon-blue))",
-          cyan: "hsl(var(--neon-cyan))",
-          purple: "hsl(var(--neon-purple))",
-        },
         glass: {
           bg: "hsl(var(--glass-bg))",
           border: "hsl(var(--glass-border))",
         },
         surface: {
-          dark: "hsl(var(--surface-dark))",
+          subtle: "hsl(var(--surface-subtle))",
           elevated: "hsl(var(--surface-elevated))",
         },
         success: "hsl(var(--success))",
