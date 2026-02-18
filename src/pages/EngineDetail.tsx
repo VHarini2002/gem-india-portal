@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockEngines, mockShipments, mockParts, mockFinancials, getPhases, Part } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
-import ParticleBackground from '@/components/ParticleBackground';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import PartLifecycleDialog from '@/components/PartLifecycleDialog';
 import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -20,6 +19,8 @@ const allTabs = [
   { id: 'analysis', label: 'Analysis', icon: BarChart3 },
 ];
 
+const CHART_STYLE = { background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(200,210,230,0.8)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '13px' };
+
 const EngineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,9 +30,8 @@ const EngineDetail = () => {
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [isPartDialogOpen, setIsPartDialogOpen] = useState(false);
 
-  // Parse WO-XXXX-XXX-ESN-XXXXXX from URL
   const engine = mockEngines.find(e => `${e.workOrder}-${e.esn}` === id);
-  if (!engine) return <div className="min-h-screen flex items-center justify-center font-heading neon-text">Engine not found</div>;
+  if (!engine) return <div className="min-h-screen flex items-center justify-center font-heading text-primary">Engine not found</div>;
 
   const shipments = mockShipments.filter(s => s.engineId === engine.id);
   const parts = mockParts.filter(p => p.engineId === engine.id);
@@ -42,7 +42,6 @@ const EngineDetail = () => {
   const currentPhaseIndex = phases.indexOf(engine.currentPhase);
 
   const filteredParts = partsFilter === 'all' ? parts : parts.filter(p => p.category === partsFilter);
-
   const scrapCount = parts.filter(p => p.category === 'Scrap').length;
   const repairCount = parts.filter(p => p.category === 'Repair').length;
   const sellCount = parts.filter(p => p.category === 'Sell').length;
@@ -66,19 +65,18 @@ const EngineDetail = () => {
                 { label: 'Current Phase', value: engine.currentPhase },
                 { label: 'Service Type', value: engine.serviceType },
               ].map((item, i) => (
-                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass-card p-4 rounded-lg">
-                  <p className="font-body text-xs text-muted-foreground">{item.label}</p>
-                  <p className="font-heading text-sm neon-text mt-1">{item.value}</p>
+                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass-card p-4 rounded-xl bg-white/50">
+                  <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
+                  <p className="font-heading text-sm font-semibold text-foreground">{item.value}</p>
                 </motion.div>
               ))}
             </div>
 
-            {/* Lifecycle Timeline */}
-            <div className="glass-card-glow p-6 rounded-xl">
-              <h3 className="font-heading text-sm neon-text tracking-wider mb-6">LIFECYCLE TIMELINE</h3>
+            <div className="glass-card-glow p-6 rounded-2xl">
+              <h3 className="font-heading text-sm font-bold text-foreground mb-6">Lifecycle Timeline</h3>
               <div className="relative">
                 <div className="flex items-center justify-between relative">
-                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-secondary" />
+                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-muted" />
                   <div className="absolute top-4 left-0 h-0.5 progress-glow" style={{ width: `${(currentPhaseIndex / (phases.length - 1)) * 100}%` }} />
                   {phases.map((phase, i) => (
                     <div key={phase} className="relative z-10 flex flex-col items-center" style={{ width: `${100 / phases.length}%` }}>
@@ -86,15 +84,13 @@ const EngineDetail = () => {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: i * 0.1 }}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-heading ${
-                          i <= currentPhaseIndex
-                            ? 'bg-primary text-primary-foreground shadow-[0_0_15px_hsl(200,100%,50%,0.5)]'
-                            : 'bg-secondary text-muted-foreground'
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-heading font-bold ${
+                          i <= currentPhaseIndex ? 'bg-primary text-white shadow-sm' : 'bg-muted text-muted-foreground'
                         }`}
                       >
                         {i + 1}
                       </motion.div>
-                      <p className={`mt-2 text-xs font-body text-center ${i <= currentPhaseIndex ? 'neon-text' : 'text-muted-foreground'}`}>
+                      <p className={`mt-2 text-xs font-body text-center ${i <= currentPhaseIndex ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                         {phase}
                       </p>
                     </div>
@@ -104,10 +100,10 @@ const EngineDetail = () => {
             </div>
 
             {engine.status === 'In Transit' && (
-              <div className="glass-card-glow p-6 rounded-xl">
-                <h3 className="font-heading text-sm status-transit tracking-wider mb-3">ETA PROGRESS</h3>
-                <div className="h-3 rounded-full bg-secondary overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${engine.progress}%` }} transition={{ duration: 1.5 }} className="h-full rounded-full bg-gradient-to-r from-warning to-primary" style={{ boxShadow: '0 0 10px hsl(40, 95%, 55%, 0.5)' }} />
+              <div className="glass-card-glow p-6 rounded-2xl">
+                <h3 className="font-heading text-sm font-bold text-warning mb-3">ETA Progress</h3>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${engine.progress}%` }} transition={{ duration: 1.5 }} className="h-full rounded-full bg-gradient-to-r from-warning to-primary" />
                 </div>
                 <p className="font-body text-sm text-muted-foreground mt-2">{engine.progress}% of estimated transit completed</p>
               </div>
@@ -119,13 +115,13 @@ const EngineDetail = () => {
         return (
           <div className="space-y-4">
             {shipments.map((s, i) => (
-              <motion.div key={s.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="glass-card-glow p-5 rounded-xl">
+              <motion.div key={s.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="glass-card-glow p-5 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="font-heading text-sm neon-text tracking-wider">{s.shipmentId}</p>
+                    <p className="font-heading text-sm font-bold text-primary">{s.shipmentId}</p>
                     <p className="font-body text-xs text-muted-foreground">{s.carrier}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-body text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs font-body text-muted-foreground bg-white/40 px-2.5 py-1 rounded-lg">
                     {s.mode === 'Air' && <Plane className="w-3 h-3" />}
                     {s.mode === 'Sea' && <Ship className="w-3 h-3" />}
                     {s.mode === 'Road' && <Car className="w-3 h-3" />}
@@ -133,18 +129,25 @@ const EngineDetail = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  <div><p className="text-xs text-muted-foreground font-body">From</p><p className="text-sm font-body">{s.fromLocation}</p></div>
-                  <div><p className="text-xs text-muted-foreground font-body">To</p><p className="text-sm font-body">{s.toLocation}</p></div>
-                  <div><p className="text-xs text-muted-foreground font-body">Dispatch</p><p className="text-sm font-body">{s.dispatchDate}</p></div>
-                  <div><p className="text-xs text-muted-foreground font-body">ETA</p><p className="text-sm font-body">{s.eta}</p></div>
+                  {[
+                    { label: 'From', value: s.fromLocation },
+                    { label: 'To', value: s.toLocation },
+                    { label: 'Dispatch', value: s.dispatchDate },
+                    { label: 'ETA', value: s.eta },
+                  ].map(item => (
+                    <div key={item.label} className="bg-white/40 rounded-xl p-2.5">
+                      <p className="text-xs text-muted-foreground font-body">{item.label}</p>
+                      <p className="text-sm font-body font-medium text-foreground">{item.value}</p>
+                    </div>
+                  ))}
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-3 h-3 text-primary" />
+                  <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                   <span className="text-xs font-body text-muted-foreground">{s.currentPosition}</span>
-                  <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${s.etaCompleted}%` }} transition={{ duration: 1 }} className="h-full rounded-full progress-glow" />
                   </div>
-                  <span className="text-xs neon-text font-heading">{s.etaCompleted}%</span>
+                  <span className="text-xs text-primary font-heading font-semibold">{s.etaCompleted}%</span>
                 </div>
               </motion.div>
             ))}
@@ -164,9 +167,9 @@ const EngineDetail = () => {
                   { label: 'Warehouse Bay', value: 'Bay-C14' },
                   { label: 'Preservation', value: 'Active' },
                 ].map((item, i) => (
-                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
-                    <p className="font-body text-xs text-muted-foreground">{item.label}</p>
-                    <p className="font-heading text-lg neon-text-cyan mt-1">{item.value}</p>
+                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-2xl">
+                    <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
+                    <p className="font-heading text-lg font-bold text-primary">{item.value}</p>
                   </motion.div>
                 ))}
               </div>
@@ -178,9 +181,9 @@ const EngineDetail = () => {
                   { label: 'Modules Removed', value: '14' },
                   { label: 'Expected Return', value: engine.expectedCompletion },
                 ].map((item, i) => (
-                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
-                    <p className="font-body text-xs text-muted-foreground">{item.label}</p>
-                    <p className="font-heading text-lg neon-text mt-1">{item.value}</p>
+                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-2xl">
+                    <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
+                    <p className="font-heading text-lg font-bold text-foreground">{item.value}</p>
                   </motion.div>
                 ))}
               </div>
@@ -188,15 +191,15 @@ const EngineDetail = () => {
             {engine.serviceType === 'Teardown, Repair & Sell' && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  { label: 'Total Parts', value: parts.length, color: 'neon-text' },
+                  { label: 'Total Parts', value: parts.length, color: 'text-foreground' },
                   { label: 'Scrap', value: scrapCount, color: 'text-destructive' },
-                  { label: 'Repairable', value: repairCount, color: 'status-transit' },
-                  { label: 'Sellable', value: sellCount, color: 'status-active' },
-                  { label: 'LLP Parts', value: llpCount, color: 'neon-text-cyan' },
+                  { label: 'Repairable', value: repairCount, color: 'text-warning' },
+                  { label: 'Sellable', value: sellCount, color: 'text-success' },
+                  { label: 'LLP Parts', value: llpCount, color: 'text-primary' },
                 ].map((item, i) => (
-                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
-                    <p className="font-body text-xs text-muted-foreground">{item.label}</p>
-                    <AnimatedCounter target={item.value} className={`font-heading text-2xl ${item.color}`} />
+                  <motion.div key={item.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-2xl">
+                    <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
+                    <AnimatedCounter target={item.value} className={`font-heading text-2xl font-bold ${item.color}`} />
                   </motion.div>
                 ))}
               </div>
@@ -209,54 +212,55 @@ const EngineDetail = () => {
           <div>
             <div className="flex gap-2 mb-4 flex-wrap">
               {(['all', 'Scrap', 'Repair', 'Sell'] as const).map(f => (
-                <button key={f} onClick={() => setPartsFilter(f)} className={`px-4 py-2 rounded-lg font-heading text-xs tracking-wider uppercase transition-all ${partsFilter === f ? 'btn-neon-solid' : 'btn-neon'}`}>
+                <button key={f} onClick={() => setPartsFilter(f)} className={`px-4 py-2 rounded-xl font-heading text-xs font-semibold transition-all ${partsFilter === f ? 'btn-primary' : 'btn-secondary'}`}>
                   {f === 'all' ? `All (${parts.length})` : `${f} (${parts.filter(p => p.category === f).length})`}
                 </button>
               ))}
             </div>
-            <div className="overflow-x-auto">
+            <div className="glass-card-glow rounded-2xl overflow-hidden">
               <table className="w-full text-sm font-body">
                 <thead>
-                  <tr className="border-b border-border/50">
-                    <th className="text-left py-3 px-3 font-heading text-xs text-muted-foreground tracking-wider">PART #</th>
-                    <th className="text-left py-3 px-3 font-heading text-xs text-muted-foreground tracking-wider">SERIAL</th>
-                    <th className="text-left py-3 px-3 font-heading text-xs text-muted-foreground tracking-wider">CATEGORY</th>
-                    <th className="text-left py-3 px-3 font-heading text-xs text-muted-foreground tracking-wider">LOCATION</th>
-                    <th className="text-left py-3 px-3 font-heading text-xs text-muted-foreground tracking-wider">DETAILS</th>
+                  <tr className="border-b border-border/50 bg-white/30">
+                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Part #</th>
+                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Serial</th>
+                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Category</th>
+                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Location</th>
+                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredParts.slice(0, 20).map((p, i) => (
-                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-primary/5">
-                      <td className="py-3 px-3">
+                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-white/30 transition-colors">
+                      <td className="py-3 px-4">
                         {p.category === 'Scrap' ? (
                           <TooltipProvider>
                             <RadixTooltip>
                               <TooltipTrigger asChild>
                                 <span className="text-muted-foreground/60 cursor-not-allowed">{p.partNumber}</span>
                               </TooltipTrigger>
-                              <TooltipContent className="bg-card border-border">
+                              <TooltipContent className="bg-white border-border text-foreground">
                                 <p className="text-xs">Scrap parts have no further lifecycle</p>
                               </TooltipContent>
                             </RadixTooltip>
                           </TooltipProvider>
                         ) : (
-                          <button
-                            onClick={() => { setSelectedPart(p); setIsPartDialogOpen(true); }}
-                            className="neon-text hover:underline hover:drop-shadow-[0_0_6px_hsl(200,100%,50%,0.5)] transition-all cursor-pointer text-left"
-                          >
+                          <button onClick={() => { setSelectedPart(p); setIsPartDialogOpen(true); }} className="text-primary font-semibold hover:underline cursor-pointer text-left">
                             {p.partNumber}
                           </button>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-foreground/80">{p.serialNumber}</td>
-                      <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-xs ${p.category === 'Scrap' ? 'bg-destructive/20 text-destructive' : p.category === 'Repair' ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'}`}>
+                      <td className="py-3 px-4 text-foreground/80">{p.serialNumber}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          p.category === 'Scrap' ? 'bg-red-50 text-destructive border border-red-200'
+                          : p.category === 'Repair' ? 'bg-amber-50 text-warning border border-amber-200'
+                          : 'bg-green-50 text-success border border-green-200'
+                        }`}>
                           {p.category}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-muted-foreground">{p.currentLocation}</td>
-                      <td className="py-3 px-3 text-muted-foreground text-xs">
+                      <td className="py-3 px-4 text-muted-foreground">{p.currentLocation}</td>
+                      <td className="py-3 px-4 text-muted-foreground text-xs">
                         {p.category === 'Repair' && `Cost: $${p.repairCost?.toLocaleString()}`}
                         {p.category === 'Sell' && `$${p.price?.toLocaleString()} • ${p.saleStatus}`}
                         {p.category === 'Scrap' && p.scrapReason}
@@ -266,7 +270,7 @@ const EngineDetail = () => {
                 </tbody>
               </table>
               {filteredParts.length > 20 && (
-                <p className="text-center text-xs text-muted-foreground mt-4 font-body">Showing 20 of {filteredParts.length} parts</p>
+                <p className="text-center text-xs text-muted-foreground py-4 font-body">Showing 20 of {filteredParts.length} parts</p>
               )}
             </div>
           </div>
@@ -276,20 +280,20 @@ const EngineDetail = () => {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {['Engine Documents', 'Logistics Documents', 'Part Certifications', 'Repair Reports', 'Financial Documents'].map((cat, i) => (
-              <motion.div key={cat} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card-glow p-5 rounded-xl">
-                <h4 className="font-heading text-sm neon-text tracking-wider mb-3">{cat.toUpperCase()}</h4>
+              <motion.div key={cat} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card-glow p-5 rounded-2xl">
+                <h4 className="font-heading text-sm font-bold text-foreground mb-3">{cat}</h4>
                 <div className="space-y-2">
                   {[`${cat.split(' ')[0]}_Report_${engine.esn}.pdf`, `${cat.split(' ')[0]}_Summary_${engine.workOrder}.pdf`, `${cat.split(' ')[0]}_Certificate.pdf`].map(doc => (
-                    <div key={doc} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                    <div key={doc} className="flex items-center justify-between p-2.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors border border-border/30">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-body">{doc}</span>
+                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-sm font-body text-foreground truncate">{doc}</span>
                       </div>
-                      <button className="btn-neon py-1 px-3 text-xs">View</button>
+                      <button className="btn-secondary py-1 px-3 text-xs rounded-lg flex-shrink-0">View</button>
                     </div>
                   ))}
                 </div>
-                <button className="mt-3 btn-neon py-2 px-4 text-xs w-full">Upload Document</button>
+                <button className="mt-3 btn-secondary py-2 px-4 text-xs w-full rounded-xl">Upload Document</button>
               </motion.div>
             ))}
           </div>
@@ -302,22 +306,22 @@ const EngineDetail = () => {
           const totalStorage = storageDays * costPerDay;
           const logCost = 12000;
           const storageItems = [
-            { label: 'Storage Days', value: storageDays, color: 'neon-text-cyan' },
-            { label: 'Cost Per Day', value: costPerDay, prefix: '$', color: 'neon-text' },
-            { label: 'Total Storage Cost', value: totalStorage, prefix: '$', color: 'status-transit' },
-            { label: 'Logistics Cost', value: logCost, prefix: '$', color: 'neon-text' },
-            { label: 'Total Accrued', value: totalStorage + logCost, prefix: '$', color: 'status-active' },
-            { label: 'Payment Status', value: 0, color: 'status-transit' },
+            { label: 'Storage Days', value: storageDays, prefix: '', color: 'text-primary' },
+            { label: 'Cost Per Day', value: costPerDay, prefix: '$', color: 'text-foreground' },
+            { label: 'Total Storage Cost', value: totalStorage, prefix: '$', color: 'text-warning' },
+            { label: 'Logistics Cost', value: logCost, prefix: '$', color: 'text-foreground' },
+            { label: 'Total Accrued', value: totalStorage + logCost, prefix: '$', color: 'text-success' },
+            { label: 'Payment Status', value: 0, prefix: '', color: 'text-warning' },
           ];
           return (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {storageItems.map((item, i) => (
-                <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
-                  <p className="font-body text-xs text-muted-foreground">{item.label}</p>
+                <motion.div key={item.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-2xl">
+                  <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
                   {item.label === 'Payment Status' ? (
-                    <p className={`font-heading text-lg mt-1 ${item.color}`}>Pending</p>
+                    <p className={`font-heading text-lg font-bold mt-1 ${item.color}`}>Pending</p>
                   ) : (
-                    <AnimatedCounter target={item.value} prefix={item.prefix} className={`font-heading text-lg ${item.color}`} />
+                    <AnimatedCounter target={item.value} prefix={item.prefix} className={`font-heading text-xl font-bold ${item.color}`} />
                   )}
                 </motion.div>
               ))}
@@ -328,32 +332,32 @@ const EngineDetail = () => {
         return (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Revenue', value: financial.totalRevenue, prefix: '$', color: 'status-active' },
-              { label: 'Repair Cost', value: financial.repairCost, prefix: '$', color: 'status-transit' },
-              { label: 'Logistics Cost', value: financial.logisticsCost, prefix: '$', color: 'neon-text' },
-              { label: 'Storage Cost', value: financial.storageCost, prefix: '$', color: 'neon-text-cyan' },
-              { label: 'Commission %', value: financial.commissionPercent, suffix: '%', color: 'neon-text' },
-              { label: 'Commission Amount', value: financial.commissionAmount, prefix: '$', color: 'neon-text' },
-              { label: 'Net Payable', value: financial.netPayable, prefix: '$', color: 'status-active' },
-              { label: 'Payment Status', value: 0, color: financial.paymentStatus === 'Paid' ? 'status-active' : 'status-transit' },
+              { label: 'Total Revenue', value: financial.totalRevenue, prefix: '$', color: 'text-success' },
+              { label: 'Repair Cost', value: financial.repairCost, prefix: '$', color: 'text-warning' },
+              { label: 'Logistics Cost', value: financial.logisticsCost, prefix: '$', color: 'text-foreground' },
+              { label: 'Storage Cost', value: financial.storageCost, prefix: '$', color: 'text-primary' },
+              { label: 'Commission %', value: financial.commissionPercent, suffix: '%', color: 'text-foreground' },
+              { label: 'Commission Amount', value: financial.commissionAmount, prefix: '$', color: 'text-foreground' },
+              { label: 'Net Payable', value: financial.netPayable, prefix: '$', color: 'text-success' },
+              { label: 'Payment Status', value: 0, color: financial.paymentStatus === 'Paid' ? 'text-success' : 'text-warning' },
             ].map((item, i) => (
-              <motion.div key={item.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-lg">
-                <p className="font-body text-xs text-muted-foreground">{item.label}</p>
+              <motion.div key={item.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }} className="glass-card-glow p-4 rounded-2xl">
+                <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
                 {item.label === 'Payment Status' ? (
-                  <p className={`font-heading text-lg mt-1 ${item.color}`}>{financial.paymentStatus}</p>
+                  <p className={`font-heading text-lg font-bold mt-1 ${item.color}`}>{financial.paymentStatus}</p>
                 ) : (
-                  <AnimatedCounter target={item.value} prefix={item.prefix} suffix={item.suffix} className={`font-heading text-lg ${item.color}`} />
+                  <AnimatedCounter target={item.value} prefix={item.prefix} suffix={item.suffix} className={`font-heading text-xl font-bold ${item.color}`} />
                 )}
               </motion.div>
             ))}
           </div>
         );
 
-      case 'analysis':
+      case 'analysis': {
         const pieData = [
-          { name: 'Scrap', value: scrapCount, color: 'hsl(0, 84%, 60%)' },
-          { name: 'Repair', value: repairCount, color: 'hsl(40, 95%, 55%)' },
-          { name: 'Sell', value: sellCount, color: 'hsl(150, 80%, 45%)' },
+          { name: 'Scrap', value: scrapCount, color: '#ef4444' },
+          { name: 'Repair', value: repairCount, color: '#f59e0b' },
+          { name: 'Sell', value: sellCount, color: '#10b981' },
         ];
         const revenueData = [
           { name: 'Parts Sold', value: financial ? financial.totalRevenue / 1000 : 0 },
@@ -365,74 +369,73 @@ const EngineDetail = () => {
           month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
           cost: engine.serviceType === 'Lease Storage' ? (i + 1) * 4500 : 0,
         }));
-
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="glass-card-glow p-6 rounded-xl">
-              <h3 className="font-heading text-sm neon-text tracking-wider mb-4">PARTS DISTRIBUTION</h3>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="glass-card-glow p-6 rounded-2xl">
+              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Parts Distribution</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
                     {pieData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="transparent" />)}
                   </Pie>
-                  <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
-                  <Legend wrapperStyle={{ fontFamily: 'Rajdhani', fontSize: '12px' }} />
+                  <RechartsTooltip contentStyle={CHART_STYLE} />
+                  <Legend wrapperStyle={{ fontFamily: 'Inter', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="glass-card-glow p-6 rounded-xl">
-              <h3 className="font-heading text-sm neon-text tracking-wider mb-4">REVENUE BREAKDOWN ($K)</h3>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="glass-card-glow p-6 rounded-2xl">
+              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Revenue Breakdown ($K)</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                  <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                  <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
-                  <Bar dataKey="value" fill="hsl(200, 100%, 50%)" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,210,230,0.5)" />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip contentStyle={CHART_STYLE} />
+                  <Bar dataKey="value" fill="hsl(221,83%,53%)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
 
             {engine.serviceType === 'Lease Storage' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="glass-card-glow p-6 rounded-xl lg:col-span-2">
-                <h3 className="font-heading text-sm neon-text-cyan tracking-wider mb-4">STORAGE COST ACCUMULATION</h3>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="glass-card-glow p-6 rounded-2xl lg:col-span-2">
+                <h3 className="font-heading text-sm font-bold text-foreground mb-4">Storage Cost Accumulation</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={storageLine}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(200, 40%, 15%)" />
-                    <XAxis dataKey="month" tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                    <YAxis tick={{ fill: 'hsl(215, 20%, 55%)', fontFamily: 'Rajdhani', fontSize: 11 }} />
-                    <RechartsTooltip contentStyle={{ background: 'hsl(225, 40%, 11%)', border: '1px solid hsl(200, 60%, 25%)', borderRadius: '8px', fontFamily: 'Rajdhani' }} />
-                    <Line type="monotone" dataKey="cost" stroke="hsl(185, 100%, 55%)" strokeWidth={2} dot={{ fill: 'hsl(185, 100%, 55%)', r: 3 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,210,230,0.5)" />
+                    <XAxis dataKey="month" tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip contentStyle={CHART_STYLE} />
+                    <Line type="monotone" dataKey="cost" stroke="hsl(221,83%,53%)" strokeWidth={2.5} dot={{ fill: 'hsl(221,83%,53%)', r: 4, strokeWidth: 0 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </motion.div>
             )}
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="glass-card-glow p-6 rounded-xl">
-              <h3 className="font-heading text-sm neon-text tracking-wider mb-4">ENGINE LIFECYCLE PROGRESS</h3>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="glass-card-glow p-6 rounded-2xl">
+              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Engine Lifecycle Progress</h3>
               <div className="flex items-center justify-center">
-                <div className="relative w-32 h-32">
+                <div className="relative w-36 h-36">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(225, 30%, 18%)" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(220,15%,90%)" strokeWidth="8" />
                     <motion.circle
-                      cx="50" cy="50" r="40" fill="none" stroke="hsl(200, 100%, 50%)"
+                      cx="50" cy="50" r="40" fill="none" stroke="hsl(221,83%,53%)"
                       strokeWidth="8" strokeLinecap="round"
                       strokeDasharray={`${2 * Math.PI * 40}`}
                       initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
                       animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - engine.progress / 100) }}
                       transition={{ duration: 1.5, ease: 'easeOut' }}
-                      style={{ filter: 'drop-shadow(0 0 6px hsl(200, 100%, 50%, 0.5))' }}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <AnimatedCounter target={engine.progress} suffix="%" className="font-heading text-xl neon-text" />
+                    <AnimatedCounter target={engine.progress} suffix="%" className="font-heading text-2xl font-bold text-primary" />
                   </div>
                 </div>
               </div>
             </motion.div>
           </div>
         );
+      }
 
       default:
         return null;
@@ -440,63 +443,69 @@ const EngineDetail = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
-      <ParticleBackground />
-      <header className="relative z-10 glass-card border-b border-border/30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 glass-header">
+        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/60 transition-colors">
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
-            <h1 className="font-heading text-xl neon-text tracking-wider">GEM INDIA</h1>
+            <div className="h-5 w-px bg-border" />
+            <h1 className="font-heading text-base font-bold text-foreground">GEM India</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-sm text-foreground/80">{user?.name}</span>
-            <button onClick={() => navigate('/help')} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
-              <HelpCircle className="w-3 h-3" /> Help
+          <div className="flex items-center gap-2">
+            <span className="font-body text-sm text-foreground/70 hidden sm:block">{user?.name}</span>
+            <button onClick={() => navigate('/help')} className="btn-secondary py-2 px-3 text-xs flex items-center gap-1.5 rounded-xl">
+              <HelpCircle className="w-3.5 h-3.5" /> Help
             </button>
-            <button onClick={handleLogout} className="btn-neon py-2 px-3 text-xs flex items-center gap-1">
-              <LogOut className="w-3 h-3" /> Logout
+            <button onClick={handleLogout} className="btn-secondary py-2 px-3 text-xs flex items-center gap-1.5 rounded-xl">
+              <LogOut className="w-3.5 h-3.5" /> Logout
             </button>
           </div>
         </div>
       </header>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-6 pb-12">
+      <div className="max-w-7xl mx-auto px-6 pt-6 pb-12">
         {/* Engine Header */}
-        <div className="glass-card-glow p-6 rounded-xl mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card-glow p-6 rounded-2xl mb-6"
+        >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="font-heading text-2xl neon-text tracking-wider">{engine.esn}</h2>
-              <p className="font-body text-muted-foreground">{engine.model} • {engine.workOrder} • {engine.clientName}</p>
+              <h2 className="font-heading text-2xl font-bold text-foreground">{engine.esn}</h2>
+              <p className="font-body text-muted-foreground text-sm mt-1">{engine.model} • {engine.workOrder} • {engine.clientName}</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-heading tracking-wider glow-border ${
-                engine.status === 'In Transit' ? 'status-transit' : engine.status === 'Completed' ? 'status-completed' : 'neon-text'
+              <span className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
+                engine.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                : engine.status === 'Completed' ? 'bg-primary/8 text-primary border border-primary/20'
+                : 'bg-blue-50 text-blue-700 border border-blue-200'
               }`}>
                 {engine.status}
               </span>
-              <div className="flex items-center gap-1 text-sm font-body text-muted-foreground">
-                <Clock className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 text-sm font-body text-muted-foreground bg-white/40 px-3 py-1.5 rounded-xl">
+                <Clock className="w-3.5 h-3.5" />
                 {engine.lastUpdated}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+        <div className="glass-card flex gap-1 p-1.5 rounded-2xl mb-6 overflow-x-auto">
           {tabs.map(t => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-heading text-xs tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                 activeTab === t.id
-                  ? 'glass-card-glow neon-text'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
               }`}
             >
-              <t.icon className="w-4 h-4" />
+              <t.icon className="w-3.5 h-3.5" />
               {t.label}
             </button>
           ))}

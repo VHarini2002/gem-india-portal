@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
-import { mockEngines, mockParts, mockFinancials, mockShipments } from '@/data/mockData';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { mockEngines, mockParts, mockFinancials } from '@/data/mockData';
 
 interface Message {
   id: number;
@@ -13,7 +12,6 @@ interface Message {
 const getAnswer = (q: string): string => {
   const lower = q.toLowerCase();
 
-  // Engine counts
   const leaseEngines = mockEngines.filter(e => e.serviceType === 'Lease Storage');
   const transitEngines = mockEngines.filter(e => e.status === 'In Transit');
   const storageEngines = mockEngines.filter(e => e.status === 'In Storage' || e.status === 'Preservation Active');
@@ -30,7 +28,6 @@ const getAnswer = (q: string): string => {
   if (lower.includes('total engines') || (lower.includes('how many') && lower.includes('engine')))
     return `GEM India is currently managing ${mockEngines.length} engines across all clients.`;
 
-  // Profit / revenue for specific engine
   const esnMatch = lower.match(/(?:esn[- ]?)?(\d{6})/);
   if (esnMatch) {
     const esn = `ESN-${esnMatch[1]}`;
@@ -41,28 +38,23 @@ const getAnswer = (q: string): string => {
         return `Engine ${esn} (${engine.model}, ${engine.serviceType}):\n• Total Revenue: $${fin.totalRevenue.toLocaleString()}\n• Repair Cost: $${fin.repairCost.toLocaleString()}\n• Logistics: $${fin.logisticsCost.toLocaleString()}\n• Net Payable: $${fin.netPayable.toLocaleString()}\n• Payment: ${fin.paymentStatus}`;
       }
       if (engine.serviceType === 'Lease Storage') {
-        return `Engine ${esn} is a Lease Storage engine. Revenue is based on storage cost ($150/day) and logistics. No teardown financials.`;
+        return `Engine ${esn} is a Lease Storage engine. Revenue is based on storage cost ($150/day) and logistics.`;
       }
-      return `Engine ${esn} found (${engine.model}), but no financial data is available yet.`;
+      return `Engine ${esn} found (${engine.model}), but no financial data available yet.`;
     }
   }
 
   if (lower.includes('profit') || lower.includes('revenue'))
     return `Total revenue across all teardown engines: $${mockFinancials.reduce((s, f) => s + f.totalRevenue, 0).toLocaleString()}. Net payable to clients: $${mockFinancials.reduce((s, f) => s + f.netPayable, 0).toLocaleString()}.`;
 
-  if (lower.includes('revenue') && lower.includes('calculat'))
-    return 'Revenue is calculated from parts sold. Net payable = Total Revenue - Repair Costs - Logistics - Storage - Commission (8%).';
-
-  // Parts
   if (lower.includes('parts') || lower.includes('part'))
     return `Total parts tracked: ${mockParts.length}. Scrap: ${mockParts.filter(p => p.category === 'Scrap').length}, Repair: ${mockParts.filter(p => p.category === 'Repair').length}, Sell: ${mockParts.filter(p => p.category === 'Sell').length}.`;
 
-  // Help
   if (lower.includes('help') || lower.includes('what can'))
-    return 'I can answer questions about:\n• Engine counts (transit, repair, storage, lease)\n• Financial data per engine (mention ESN)\n• Parts distribution\n• Revenue calculations\n• General portal navigation\n\nTry: "How many engines are in transit?" or "Profit for 726481"';
+    return 'I can answer questions about:\n• Engine counts (transit, repair, storage, lease)\n• Financial data per engine (mention ESN)\n• Parts distribution\n• Revenue calculations\n\nTry: "How many engines are in transit?" or "Profit for 726481"';
 
   if (lower.includes('hello') || lower.includes('hi'))
-    return 'Hello! I\'m the GEM India assistant. Ask me about engines, parts, financials, or logistics. Type "help" for options.';
+    return 'Hello! I\'m the GEM India assistant. Ask me about engines, parts, financials, or logistics.';
 
   return 'I can help with engine status, parts data, financials, and more. Try asking "How many engines are in transit?" or "Profit for engine 726481". Type "help" for all options.';
 };
@@ -102,12 +94,9 @@ const ChatWidget = () => {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_25px_hsl(200,100%,50%,0.3)]"
-            style={{
-              background: 'linear-gradient(135deg, hsl(200,100%,50%), hsl(185,100%,50%))',
-            }}
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg btn-primary"
           >
-            <MessageCircle className="w-6 h-6 text-background" />
+            <MessageCircle className="w-6 h-6 text-white" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -120,20 +109,27 @@ const ChatWidget = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 z-50 h-full w-full sm:w-96 flex flex-col border-l"
+            className="fixed top-0 right-0 z-50 h-full w-full sm:w-96 flex flex-col"
             style={{
-              background: 'linear-gradient(180deg, hsl(225,40%,10%,0.98), hsl(225,54%,8%,0.98))',
+              background: 'rgba(255, 255, 255, 0.82)',
               backdropFilter: 'blur(30px)',
-              borderColor: 'hsl(200,60%,25%,0.4)',
+              WebkitBackdropFilter: 'blur(30px)',
+              borderLeft: '1px solid rgba(255, 255, 255, 0.8)',
+              boxShadow: '-4px 0 40px rgba(100, 120, 200, 0.12)',
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border/30">
-              <div className="flex items-center gap-2">
-                <Bot className="w-5 h-5 text-primary" />
-                <h3 className="font-heading text-sm neon-text tracking-wider">GEM ASSISTANT</h3>
+            <div className="flex items-center justify-between p-4 border-b border-border/60">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-bold text-foreground">GEM Assistant</h3>
+                  <p className="text-xs text-muted-foreground font-body">AI-powered support</p>
+                </div>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1 rounded-lg hover:bg-secondary/50 transition-colors">
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/60 transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -148,21 +144,21 @@ const ChatWidget = () => {
                   className={`flex gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {m.role === 'bot' && (
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1" style={{ background: 'hsl(200,100%,50%,0.2)' }}>
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <Bot className="w-4 h-4 text-primary" />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm font-body whitespace-pre-line ${
+                    className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-body whitespace-pre-line ${
                       m.role === 'user'
-                        ? 'bg-primary/20 text-foreground border border-primary/30'
-                        : 'glass-card text-foreground/90'
+                        ? 'bg-primary text-white rounded-tr-sm'
+                        : 'bg-white/70 text-foreground border border-border/50 rounded-tl-sm'
                     }`}
                   >
                     {m.text}
                   </div>
                   {m.role === 'user' && (
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1 bg-secondary">
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
                       <User className="w-4 h-4 text-muted-foreground" />
                     </div>
                   )}
@@ -171,21 +167,16 @@ const ChatWidget = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-border/30">
+            <div className="p-4 border-t border-border/60">
               <div className="flex gap-2">
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && send()}
                   placeholder="Ask about engines, parts, revenue..."
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-body outline-none transition-all border focus:ring-1 focus:ring-primary"
-                  style={{
-                    background: 'hsl(225,30%,14%)',
-                    borderColor: 'hsl(200,40%,20%)',
-                    color: 'hsl(210,40%,92%)',
-                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-body outline-none transition-all border border-border bg-white/60 focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
                 />
-                <button onClick={send} className="btn-neon-solid px-3 py-2.5 rounded-xl">
+                <button onClick={send} className="btn-primary px-3.5 py-2.5 rounded-xl">
                   <Send className="w-4 h-4" />
                 </button>
               </div>

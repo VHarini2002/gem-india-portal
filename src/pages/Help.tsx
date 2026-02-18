@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, HelpCircle, Mail, Phone, MessageSquare, ChevronDown } from 'lucide-react';
-import ParticleBackground from '@/components/ParticleBackground';
+import { ArrowLeft, HelpCircle, Mail, Phone, MessageSquare } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const faqs = [
@@ -19,31 +18,30 @@ const Help = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen relative">
-      <ParticleBackground />
-      <header className="relative z-10 glass-card border-b border-border/30">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
-          <button onClick={() => navigate('/dashboard')} className="p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 glass-header">
+        <div className="max-w-4xl mx-auto px-6 py-3.5 flex items-center gap-4">
+          <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/60 transition-colors">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <h1 className="font-heading text-xl neon-text tracking-wider">HELP & SUPPORT</h1>
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-primary" />
+            <h1 className="font-heading text-base font-bold text-foreground">Help & Support</h1>
+          </div>
         </div>
       </header>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* FAQ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card-glow p-6 rounded-xl">
-          <div className="flex items-center gap-2 mb-6">
-            <HelpCircle className="w-5 h-5 text-primary" />
-            <h2 className="font-heading text-lg neon-text tracking-wider">FREQUENTLY ASKED QUESTIONS</h2>
-          </div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card-glow p-6 rounded-2xl">
+          <h2 className="font-heading text-lg font-bold text-foreground mb-5">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="space-y-2">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border-border/30">
-                <AccordionTrigger className="font-heading text-sm text-foreground/90 hover:neon-text tracking-wide hover:no-underline">
+              <AccordionItem key={i} value={`faq-${i}`} className="border border-border/60 rounded-xl px-4 data-[state=open]:bg-white/50">
+                <AccordionTrigger className="font-heading text-sm font-semibold text-foreground hover:text-primary hover:no-underline py-4">
                   {faq.q}
                 </AccordionTrigger>
-                <AccordionContent className="font-body text-sm text-muted-foreground leading-relaxed">
+                <AccordionContent className="font-body text-sm text-muted-foreground leading-relaxed pb-4">
                   {faq.a}
                 </AccordionContent>
               </AccordionItem>
@@ -52,36 +50,41 @@ const Help = () => {
         </motion.div>
 
         {/* Contact KAM */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card-glow p-6 rounded-xl">
-          <div className="flex items-center gap-2 mb-6">
-            <MessageSquare className="w-5 h-5 text-accent" />
-            <h2 className="font-heading text-lg neon-text-cyan tracking-wider">CONTACT YOUR KAM</h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card-glow p-6 rounded-2xl">
+          <div className="flex items-center gap-2 mb-5">
+            <MessageSquare className="w-5 h-5 text-primary" />
+            <h2 className="font-heading text-lg font-bold text-foreground">Contact Your KAM</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="glass-card p-4 rounded-lg">
-              <p className="font-body text-xs text-muted-foreground uppercase tracking-wider">KAM Assigned</p>
-              <p className="font-heading text-sm mt-1">Priya Sharma</p>
-            </div>
-            <div className="glass-card p-4 rounded-lg">
-              <p className="font-body text-xs text-muted-foreground uppercase tracking-wider">Role</p>
-              <p className="font-heading text-sm mt-1">Key Account Manager</p>
-            </div>
-            <div className="glass-card p-4 rounded-lg flex items-center gap-3">
-              <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            {[
+              { label: 'KAM Assigned', value: 'Priya Sharma', icon: null },
+              { label: 'Role', value: 'Key Account Manager', icon: null },
+            ].map(item => (
+              <div key={item.label} className="bg-white/50 border border-border/50 p-4 rounded-xl">
+                <p className="font-body text-xs text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
+                <p className="font-heading text-sm font-semibold text-foreground">{item.value}</p>
+              </div>
+            ))}
+            <div className="bg-white/50 border border-border/50 p-4 rounded-xl flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-primary" />
+              </div>
               <div>
                 <p className="font-body text-xs text-muted-foreground">Email</p>
-                <p className="font-heading text-sm neon-text">kam@gemindia.com</p>
+                <p className="font-heading text-sm font-semibold text-primary">kam@gemindia.com</p>
               </div>
             </div>
-            <div className="glass-card p-4 rounded-lg flex items-center gap-3">
-              <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+            <div className="bg-white/50 border border-border/50 p-4 rounded-xl flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-primary" />
+              </div>
               <div>
                 <p className="font-body text-xs text-muted-foreground">Phone</p>
-                <p className="font-heading text-sm neon-text">+91 98765 43210</p>
+                <p className="font-heading text-sm font-semibold text-foreground">+91 98765 43210</p>
               </div>
             </div>
           </div>
-          <button className="mt-4 btn-neon-solid py-3 px-6 text-sm w-full rounded-xl">
+          <button className="btn-primary py-3 px-6 text-sm w-full rounded-xl">
             Send Message to KAM
           </button>
         </motion.div>
