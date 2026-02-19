@@ -66,7 +66,7 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
     const total = cart.reduce((s, p) => s + (p.price || 0), 0);
     const subject = encodeURIComponent(`Parts Inquiry - ${cart.length} parts`);
     const body = `Hi Priya,%0A%0AI am interested in the following parts:%0A%0A${partsList}%0A%0ATotal Quoted: $${total.toLocaleString()}%0A%0APlease share availability and next steps.%0A%0ARegards`;
-    window.open(`mailto:kam@gemindia.com?subject=${subject}&body=${body}`, '_self');
+    window.open(`mailto:kam@globalengine-india.com?subject=${subject}&body=${body}`, '_self');
   };
 
   if (!open) return null;

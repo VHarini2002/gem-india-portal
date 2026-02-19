@@ -447,7 +447,7 @@ const EngineDetail = () => {
     <AppLayout>
       <div className="page-wrapper min-h-screen">
         <header className="sticky top-0 z-30 glass-header">
-          <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
+          <div className="max-w-8xl mx-auto px-6 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
                 <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -459,7 +459,7 @@ const EngineDetail = () => {
           </div>
         </header>
 
-        <div className="max-w-6xl mx-auto px-6 pt-6 pb-12">
+        <div className="max-w-8xl mx-auto px-6 pt-6 pb-12">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card-glow p-6 rounded-2xl mb-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>

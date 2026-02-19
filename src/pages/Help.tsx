@@ -71,7 +71,7 @@ const Help = () => {
               </div>
               <div>
                 <p className="font-body text-xs text-muted-foreground">Email</p>
-                <p className="font-heading text-sm font-semibold text-primary">kam@gemindia.com</p>
+                <p className="font-heading text-sm font-semibold text-primary">kam@globalengine-india.com</p>
               </div>
             </div>
             <div className="bg-white/50 border border-border/50 p-4 rounded-xl flex items-center gap-3">

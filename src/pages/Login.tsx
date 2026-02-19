@@ -32,7 +32,7 @@ const Login = () => {
     <div className="page-wrapper min-h-screen flex">
       {/* Left side - Hero */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">
-        <img src={engineHero} alt="Aerospace Engine" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        <img src={engineHero} alt="Aerospace Engine" className="absolute inset-0 w-full h-full object-cover opacity-90" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(8,12,24,0.88) 0%, rgba(8,16,36,0.65) 100%)' }} />
         <div className="relative z-10 px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
@@ -152,17 +152,7 @@ const Login = () => {
           </div>
 
           {/* Quick Demo Access */}
-          <div className="mt-4 glass-card p-4 rounded-2xl">
-            <p className="font-heading text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Quick Demo Access</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => quickLogin('client1@gemindia.com', 'Client@123')} className="btn-secondary text-xs py-2.5 px-3 rounded-xl">
-                Client Demo
-              </button>
-              <button onClick={() => quickLogin('kam@gemindia.com', 'KAM@123')} className="btn-secondary text-xs py-2.5 px-3 rounded-xl">
-                KAM Demo
-              </button>
-            </div>
-          </div>
+
         </motion.div>
       </div>
     </div>
