@@ -4,19 +4,19 @@ import { Engine } from '@/data/mockData';
 import { MapPin, Truck, Clock, ArrowRight } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
-  'In Transit': { label: 'In Transit', cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
-  'In Repair': { label: 'In Repair', cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
-  'In Storage': { label: 'In Storage', cls: 'bg-cyan-50 text-cyan-700 border border-cyan-200' },
-  'Disassembly': { label: 'Disassembly', cls: 'bg-purple-50 text-purple-700 border border-purple-200' },
-  'Inspection': { label: 'Inspection', cls: 'bg-orange-50 text-orange-700 border border-orange-200' },
-  'Ready for Release': { label: 'Ready', cls: 'bg-green-50 text-green-700 border border-green-200' },
-  'Completed': { label: 'Completed', cls: 'bg-primary/8 text-primary border border-primary/20' },
-  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-50 text-teal-700 border border-teal-200' },
+  'In Transit': { label: 'In Transit', cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/25' },
+  'In Repair': { label: 'In Repair', cls: 'bg-blue-500/15 text-blue-400 border border-blue-500/25' },
+  'In Storage': { label: 'In Storage', cls: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/25' },
+  'Disassembly': { label: 'Disassembly', cls: 'bg-purple-500/15 text-purple-400 border border-purple-500/25' },
+  'Inspection': { label: 'Inspection', cls: 'bg-orange-500/15 text-orange-400 border border-orange-500/25' },
+  'Ready for Release': { label: 'Ready', cls: 'bg-green-500/15 text-green-400 border border-green-500/25' },
+  'Completed': { label: 'Completed', cls: 'bg-primary/15 text-primary border border-primary/25' },
+  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-500/15 text-teal-400 border border-teal-500/25' },
 };
 
 const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
   const navigate = useNavigate();
-  const status = statusConfig[engine.status] || { label: engine.status, cls: 'bg-muted text-foreground border border-border' };
+  const status = statusConfig[engine.status] || { label: engine.status, cls: 'bg-muted/50 text-foreground border border-border' };
 
   return (
     <motion.div
@@ -53,7 +53,7 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4 font-body bg-white/40 rounded-xl px-3 py-2">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4 font-body bg-white/5 rounded-xl px-3 py-2">
         <MapPin className="w-3 h-3 flex-shrink-0" />
         <span className="truncate">{engine.currentLocation}</span>
         <Truck className="w-3 h-3 ml-auto flex-shrink-0" />
@@ -76,7 +76,7 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-3 border-t border-border/50">
+      <div className="flex justify-between items-center pt-3 border-t border-white/8">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-body">
           <Clock className="w-3 h-3" />
           <span>{engine.lastUpdated}</span>
