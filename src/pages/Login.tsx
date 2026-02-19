@@ -29,26 +29,22 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="page-wrapper min-h-screen flex">
       {/* Left side - Hero */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">
-        <img src={engineHero} alt="Aerospace Engine" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(30,60,120,0.75) 0%, rgba(10,30,80,0.5) 100%)' }} />
+        <img src={engineHero} alt="Aerospace Engine" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(8,12,24,0.88) 0%, rgba(8,16,36,0.65) 100%)' }} />
         <div className="relative z-10 px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.25)' }}>
-              <span className="text-white text-xs font-heading font-semibold tracking-wider">ENGINE ASSET PLATFORM</span>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <span className="text-white/80 text-xs font-heading font-semibold tracking-wider">ENGINE ASSET PLATFORM</span>
             </div>
             <h1 className="font-heading text-5xl font-bold text-white mb-4 leading-tight">GEM India</h1>
-            <div className="h-1 w-16 rounded-full bg-white/60 mb-6" />
-            <p className="font-body text-lg text-white/85 leading-relaxed max-w-md">
+            <div className="h-1 w-16 rounded-full bg-primary/60 mb-6" />
+            <p className="font-body text-lg text-white/75 leading-relaxed max-w-md">
               Digital Engine Asset Visibility Platform
             </p>
-            <p className="font-body text-sm text-white/65 mt-4 max-w-sm leading-relaxed">
+            <p className="font-body text-sm text-white/50 mt-4 max-w-sm leading-relaxed">
               Complete lifecycle management for aerospace engine assets — from induction to teardown, repair, and beyond.
             </p>
           </motion.div>
@@ -76,9 +72,7 @@ const Login = () => {
                 key={t}
                 onClick={() => { setTab(t); setError(''); setIsRegister(false); }}
                 className={`flex-1 py-2.5 rounded-xl font-heading text-sm font-semibold transition-all duration-300 ${
-                  tab === t
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                  tab === t ? 'bg-primary text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {t === 'client' ? 'Client Login' : 'KAM Login'}
@@ -102,7 +96,7 @@ const Login = () => {
                   <input
                     type="text"
                     placeholder="Full Name"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/60 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-foreground font-body transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none text-foreground font-body transition-all text-sm"
                   />
                 </div>
               )}
@@ -113,7 +107,7 @@ const Login = () => {
                   placeholder="Email Address"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/60 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-foreground font-body transition-all text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none text-foreground font-body transition-all text-sm"
                 />
               </div>
               <div className="relative">
@@ -123,7 +117,7 @@ const Login = () => {
                   placeholder="Password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/60 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-foreground font-body transition-all text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none text-foreground font-body transition-all text-sm"
                 />
               </div>
 
@@ -133,7 +127,7 @@ const Login = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center gap-2 text-destructive text-sm font-body bg-destructive/8 p-3 rounded-lg"
+                    className="flex items-center gap-2 text-destructive text-sm font-body bg-destructive/10 p-3 rounded-lg"
                   >
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     {error}

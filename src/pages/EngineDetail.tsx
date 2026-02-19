@@ -5,8 +5,9 @@ import { mockEngines, mockShipments, mockParts, mockFinancials, getPhases, Part 
 import { useAuth } from '@/contexts/AuthContext';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import PartLifecycleDialog from '@/components/PartLifecycleDialog';
+import AppLayout from '@/components/AppLayout';
 import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, LogOut, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 
 const allTabs = [
@@ -19,12 +20,12 @@ const allTabs = [
   { id: 'analysis', label: 'Analysis', icon: BarChart3 },
 ];
 
-const CHART_STYLE = { background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(200,210,230,0.8)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '13px' };
+const CHART_STYLE = { background: 'rgba(10,14,26,0.92)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '12px', color: '#9ca3af' };
 
 const EngineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [partsFilter, setPartsFilter] = useState<'all' | 'Scrap' | 'Repair' | 'Sell'>('all');
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
@@ -47,7 +48,7 @@ const EngineDetail = () => {
   const sellCount = parts.filter(p => p.category === 'Sell').length;
   const llpCount = parts.filter(p => p.llpStatus === 'LLP').length;
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  
 
   const renderTab = () => {
     switch (activeTab) {
@@ -65,7 +66,7 @@ const EngineDetail = () => {
                 { label: 'Current Phase', value: engine.currentPhase },
                 { label: 'Service Type', value: engine.serviceType },
               ].map((item, i) => (
-                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass-card p-4 rounded-xl bg-white/50">
+                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass-card p-4 rounded-xl">
                   <p className="font-body text-xs text-muted-foreground mb-1">{item.label}</p>
                   <p className="font-heading text-sm font-semibold text-foreground">{item.value}</p>
                 </motion.div>
@@ -121,7 +122,7 @@ const EngineDetail = () => {
                     <p className="font-heading text-sm font-bold text-primary">{s.shipmentId}</p>
                     <p className="font-body text-xs text-muted-foreground">{s.carrier}</p>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-body text-muted-foreground bg-white/40 px-2.5 py-1 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs font-body text-muted-foreground bg-white/5 px-2.5 py-1 rounded-lg">
                     {s.mode === 'Air' && <Plane className="w-3 h-3" />}
                     {s.mode === 'Sea' && <Ship className="w-3 h-3" />}
                     {s.mode === 'Road' && <Car className="w-3 h-3" />}
@@ -135,7 +136,7 @@ const EngineDetail = () => {
                     { label: 'Dispatch', value: s.dispatchDate },
                     { label: 'ETA', value: s.eta },
                   ].map(item => (
-                    <div key={item.label} className="bg-white/40 rounded-xl p-2.5">
+                    <div key={item.label} className="bg-white/5 rounded-xl p-2.5">
                       <p className="text-xs text-muted-foreground font-body">{item.label}</p>
                       <p className="text-sm font-body font-medium text-foreground">{item.value}</p>
                     </div>
@@ -220,7 +221,7 @@ const EngineDetail = () => {
             <div className="glass-card-glow rounded-2xl overflow-hidden">
               <table className="w-full text-sm font-body">
                 <thead>
-                  <tr className="border-b border-border/50 bg-white/30">
+                  <tr className="border-b border-border/50 bg-white/3">
                     <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Part #</th>
                     <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Serial</th>
                     <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Category</th>
@@ -230,7 +231,7 @@ const EngineDetail = () => {
                 </thead>
                 <tbody>
                   {filteredParts.slice(0, 20).map((p, i) => (
-                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-white/30 transition-colors">
+                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-white/5 transition-colors">
                       <td className="py-3 px-4">
                         {p.category === 'Scrap' ? (
                           <TooltipProvider>
@@ -252,9 +253,9 @@ const EngineDetail = () => {
                       <td className="py-3 px-4 text-foreground/80">{p.serialNumber}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          p.category === 'Scrap' ? 'bg-red-50 text-destructive border border-red-200'
-                          : p.category === 'Repair' ? 'bg-amber-50 text-warning border border-amber-200'
-                          : 'bg-green-50 text-success border border-green-200'
+                          p.category === 'Scrap' ? 'bg-red-500/15 text-red-400 border border-red-500/25'
+                          : p.category === 'Repair' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+                          : 'bg-green-500/15 text-green-400 border border-green-500/25'
                         }`}>
                           {p.category}
                         </span>
@@ -284,7 +285,7 @@ const EngineDetail = () => {
                 <h4 className="font-heading text-sm font-bold text-foreground mb-3">{cat}</h4>
                 <div className="space-y-2">
                   {[`${cat.split(' ')[0]}_Report_${engine.esn}.pdf`, `${cat.split(' ')[0]}_Summary_${engine.workOrder}.pdf`, `${cat.split(' ')[0]}_Certificate.pdf`].map(doc => (
-                    <div key={doc} className="flex items-center justify-between p-2.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors border border-border/30">
+                    <div key={doc} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/8 transition-colors border border-border/30">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-primary flex-shrink-0" />
                         <span className="text-sm font-body text-foreground truncate">{doc}</span>
@@ -443,91 +444,65 @@ const EngineDetail = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 glass-header">
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/60 transition-colors">
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <div className="h-5 w-px bg-border" />
-            <h1 className="font-heading text-base font-bold text-foreground">GEM India</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-sm text-foreground/70 hidden sm:block">{user?.name}</span>
-            <button onClick={() => navigate('/help')} className="btn-secondary py-2 px-3 text-xs flex items-center gap-1.5 rounded-xl">
-              <HelpCircle className="w-3.5 h-3.5" /> Help
-            </button>
-            <button onClick={handleLogout} className="btn-secondary py-2 px-3 text-xs flex items-center gap-1.5 rounded-xl">
-              <LogOut className="w-3.5 h-3.5" /> Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-6 pt-6 pb-12">
-        {/* Engine Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card-glow p-6 rounded-2xl mb-6"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground">{engine.esn}</h2>
-              <p className="font-body text-muted-foreground text-sm mt-1">{engine.model} • {engine.workOrder} • {engine.clientName}</p>
-            </div>
+    <AppLayout>
+      <div className="page-wrapper min-h-screen">
+        <header className="sticky top-0 z-30 glass-header">
+          <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
-                engine.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                : engine.status === 'Completed' ? 'bg-primary/8 text-primary border border-primary/20'
-                : 'bg-blue-50 text-blue-700 border border-blue-200'
-              }`}>
-                {engine.status}
-              </span>
-              <div className="flex items-center gap-1.5 text-sm font-body text-muted-foreground bg-white/40 px-3 py-1.5 rounded-xl">
-                <Clock className="w-3.5 h-3.5" />
-                {engine.lastUpdated}
+              <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
+                <ArrowLeft className="w-5 h-5 text-foreground" />
+              </button>
+              <div className="h-5 w-px bg-border" />
+              <h1 className="font-heading text-base font-bold text-foreground">GEM India</h1>
+            </div>
+            <span className="font-body text-sm text-foreground/70 hidden sm:block">{user?.name}</span>
+          </div>
+        </header>
+
+        <div className="max-w-6xl mx-auto px-6 pt-6 pb-12">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card-glow p-6 rounded-2xl mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-foreground">{engine.esn}</h2>
+                <p className="font-body text-muted-foreground text-sm mt-1">{engine.model} • {engine.workOrder} • {engine.clientName}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
+                  engine.status === 'In Transit' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+                  : engine.status === 'Completed' ? 'bg-primary/15 text-primary border border-primary/25'
+                  : 'bg-blue-500/15 text-blue-400 border border-blue-500/25'
+                }`}>{engine.status}</span>
+                <div className="flex items-center gap-1.5 text-sm font-body text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl">
+                  <Clock className="w-3.5 h-3.5" />{engine.lastUpdated}
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Tabs */}
-        <div className="glass-card flex gap-1 p-1.5 rounded-2xl mb-6 overflow-x-auto">
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-                activeTab === t.id
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
-              }`}
-            >
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
-            </button>
-          ))}
+          <div className="glass-card flex gap-1 p-1.5 rounded-2xl mb-6 overflow-x-auto">
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                  activeTab === t.id ? 'bg-primary text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                }`}
+              >
+                <t.icon className="w-3.5 h-3.5" />{t.label}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+              {renderTab()}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderTab()}
-          </motion.div>
-        </AnimatePresence>
+        <PartLifecycleDialog part={selectedPart} open={isPartDialogOpen} onOpenChange={setIsPartDialogOpen} />
       </div>
-
-      <PartLifecycleDialog part={selectedPart} open={isPartDialogOpen} onOpenChange={setIsPartDialogOpen} />
-    </div>
+    </AppLayout>
   );
 };
 
 export default EngineDetail;
+
