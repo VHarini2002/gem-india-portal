@@ -12,8 +12,8 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import AppLayout from '@/components/AppLayout';
 
 const DARK_CHART = {
-  background: 'rgba(10, 14, 26, 0.9)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  background: 'rgba(10, 14, 26, 0)',
+  border: '1px solid rgba(255, 255, 255, 0)',
   borderRadius: '12px',
   fontFamily: 'Inter',
   fontSize: '12px',
@@ -57,31 +57,8 @@ const KAMDashboard = () => {
 
   return (
     <AppLayout>
-      <div className="min-h-full relative">
-        {/* Video Background */}
-        <div className="absolute inset-0 overflow-hidden rounded-[3rem]">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ opacity: isDarkTheme ? 0.15 : 0.08 }}
-          >
-            <source src="/bg-video.mp4" type="video/mp4" />
-          </video>
-          {/* Overlay to ensure text readability */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: isDarkTheme
-                ? 'linear-gradient(135deg, rgba(15, 15, 30, 0.85) 0%, rgba(26, 26, 46, 0.80) 50%, rgba(15, 15, 30, 0.85) 100%)'
-                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 247, 251, 0.80) 50%, rgba(255, 255, 255, 0.75) 100%)'
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 pt-4">
+      <div className="min-h-full opacity-90">
+        <div className="pt-4">
           {/* Welcome Message from Image */}
           <div className="mb-12">
             <h1 className={`text-4xl font-bold mb-2 ${

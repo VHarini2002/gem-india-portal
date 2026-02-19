@@ -26,46 +26,19 @@ const ClientDashboard = () => {
 
   return (
     <AppLayout>
-      <div className="min-h-full relative">
-        {/* Video Background */}
-        <div className="absolute inset-0 overflow-hidden rounded-[3rem]">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ opacity: isDarkTheme ? 0.15 : 0.08 }}
-          >
-            <source src="/bg-video.mp4" type="video/mp4" />
-          </video>
-          {/* Overlay to ensure text readability */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: isDarkTheme
-                ? 'linear-gradient(135deg, rgba(15, 15, 30, 0.85) 0%, rgba(26, 26, 46, 0.80) 50%, rgba(15, 15, 30, 0.85) 100%)'
-                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 247, 251, 0.80) 50%, rgba(255, 255, 255, 0.75) 100%)'
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 pt-1">
+      <div className="min-h-full">
+        <div className="pt-1">
           {/* Welcome Message from Image */}
           <div className="max-w-8xl mx-auto px-6 pt-8">
             {/* Hero Section */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 20}}
               animate={{ opacity: 1, y: 0 }}
               className="glass-card-glow rounded-2xl overflow-hidden mb-8"
             >
-              <div className="relative h-48 md:h-56">
-                <video
-                  autoPlay loop muted playsInline
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                  src="https://videos.pexels.com/video-files/2098989/2098989-sd_640_360_30fps.mp4"
-                />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(8,12,24,0.9) 0%, rgba(8,12,24,0.6) 60%, rgba(8,12,24,0.2) 100%)' }} />
+              <div className="relative h-48 md:h-56 opacity-100">
+
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(135]]`deg, rgba(187, 187, 187, 0) 0%, rgba(8, 12, 24, 0) 60%, rgba(8, 12, 24, 0) 100%)' }} />
                 <div className="relative z-10 h-full flex items-center px-8">
                   <div>
                     <motion.h2

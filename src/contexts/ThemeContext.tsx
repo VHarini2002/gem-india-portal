@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface ThemeContextType {
   isDarkTheme: boolean;
@@ -9,6 +9,12 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', isDarkTheme);
+    root.classList.toggle('light', !isDarkTheme);
+  }, [isDarkTheme]);
 
   return (
     <ThemeContext.Provider value={{ isDarkTheme, setIsDarkTheme }}>

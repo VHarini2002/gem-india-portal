@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import engineHero from '@/assets/engine-hero.jpg';
 import { Lock, Mail, User, ArrowRight, AlertCircle } from 'lucide-react';
-
+import { useTheme } from '@/contexts/ThemeContext';
 const Login = () => {
+  const { isDarkTheme } = useTheme();
   const [tab, setTab] = useState<'client' | 'kam'>('client');
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
@@ -31,8 +32,17 @@ const Login = () => {
   return (
     <div className="page-wrapper min-h-screen flex">
       {/* Left side - Hero */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">
-        <img src={engineHero} alt="Aerospace Engine" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">     
+       <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: isDarkTheme ? 0.90 : 0.14 }}
+      >
+        <source src="/bg-video.mp4" type="video/mp4" />
+      </video>
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(8,12,24,0.88) 0%, rgba(8,16,36,0.65) 100%)' }} />
         <div className="relative z-10 px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
@@ -105,7 +115,7 @@ const Login = () => {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  value={email}
+                  value={email.toLowerCase()}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:ring-2 focus:ring-primary/15 outline-none text-foreground font-body transition-all text-sm"
                 />

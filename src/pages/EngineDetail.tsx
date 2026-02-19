@@ -20,7 +20,7 @@ const allTabs = [
   { id: 'analysis', label: 'Analysis', icon: BarChart3 },
 ];
 
-const CHART_STYLE = { background: 'rgba(10,14,26,0.92)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '12px', color: '#9ca3af' };
+const CHART_STYLE = { background: 'rgba(10, 14, 26, 0)', border: '1px solid rgba(255, 255, 255, 0)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '12px', color: '#9ca3af' };
 
 const EngineDetail = () => {
   const { id } = useParams();
@@ -389,9 +389,9 @@ const EngineDetail = () => {
               <h3 className="font-heading text-sm font-bold text-foreground mb-4">Revenue Breakdown ($K)</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,210,230,0.5)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200, 210, 230, 0)" />
+                  <XAxis dataKey="name" tick={{ fill: 'hsla(221, 9.80%, 50.00%, 0.00)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'hsla(221, 9.80%, 50.00%, 0.00)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <RechartsTooltip contentStyle={CHART_STYLE} />
                   <Bar dataKey="value" fill="hsl(221,83%,53%)" radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -446,7 +446,7 @@ const EngineDetail = () => {
   return (
     <AppLayout>
       <div className="page-wrapper min-h-screen">
-        <header className="sticky top-0 z-30 glass-header">
+        <header className="sticky top-0 z-30 glass-header rounded-2xl">
           <div className="max-w-8xl mx-auto px-6 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => navigate('/dashboard')} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
@@ -470,7 +470,7 @@ const EngineDetail = () => {
                 <span className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
                   engine.status === 'In Transit' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
                   : engine.status === 'Completed' ? 'bg-primary/15 text-primary border border-primary/25'
-                  : 'bg-blue-500/15 text-blue-400 border border-blue-500/25'
+                  : 'bg-blue-500/15 text-blue-900 border border-blue-500/25'
                 }`}>{engine.status}</span>
                 <div className="flex items-center gap-1.5 text-sm font-body text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl">
                   <Clock className="w-3.5 h-3.5" />{engine.lastUpdated}
@@ -482,8 +482,8 @@ const EngineDetail = () => {
           <div className="glass-card flex gap-1 p-1.5 rounded-2xl mb-6 overflow-x-auto">
             {tabs.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-                  activeTab === t.id ? 'bg-primary text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-gray-900 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                  activeTab === t.id ? 'bg-primary text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
                 }`}
               >
                 <t.icon className="w-3.5 h-3.5" />{t.label}

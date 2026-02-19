@@ -11,7 +11,6 @@ import EngineDetail from "./pages/EngineDetail";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import ChatWidget from "./components/ChatWidget";
-import VideoBackground from "./components/VideoBackground";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +22,6 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <VideoBackground />
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />

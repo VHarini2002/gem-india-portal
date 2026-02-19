@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { motion } from 'framer-motion';
+import VideoBackground from '@/components/VideoBackground';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -47,9 +48,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className={`flex min-h-screen ${isDarkTheme ? 'bg-[#0F0F1E]' : 'bg-[#F5F7FB]'}`}>
+    <div className="flex min-h-screen relative ">
+      {/* Video Background (engine swirl) */}
+      <VideoBackground />
+
       {/* Premium Side Panel - Matching Image Design */}
-      <aside className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-50 shadow-2xl overflow-hidden"
+      <aside className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden"
         style={{
           background: 'linear-gradient(180deg,rgb(34, 18, 73) 0%,rgb(22, 23, 105) 50%,rgb(15, 49, 104) 100%)'
         }}
@@ -77,14 +81,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       </aside>
 
       {/* Main content with left offset */}
-      <main className="flex-1 ml-28 p-8 min-h-screen">
+      <main className="flex-1 ml-28 p-8 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-8">
-          {/* Top Navigation Bar - Dark Theme */}
-          <header className={`flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm ${
-            isDarkTheme 
-              ? 'bg-[#1A1A2E]/80 border border-white/10' 
-              : 'bg-white/50 border border-white/20'
-          }`}>
+          {/* Top Navigation Bar */}
+          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
             <div className="flex items-center gap-8">
               <nav className="flex items-center gap-6">
                 <a href="#" className={`font-semibold border-b-2 border-indigo-500 pb-1 flex items-center gap-2 ${
@@ -93,12 +93,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
                 </a>
                 <a href="#" className={`font-medium transition-colors flex items-center gap-2 ${
-                  isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                  isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-900 hover:text-gray-900'
                 }`}>
                   <Plane className="w-4 h-4" /> Workflows
                 </a>
                 <a href="#" className={`font-medium transition-colors flex items-center gap-2 ${
-                  isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                  isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-900 hover:text-gray-900'
                 }`}>
                   <Triangle className="w-4 h-4" /> Integrations
                 </a>
@@ -181,12 +181,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </div>
           </header>
 
-          {/* Page Content Container - Dark Theme */}
-          <div className={`flex-1 backdrop-blur-xl rounded-[3rem] p-8 border shadow-sm overflow-auto ${
-            isDarkTheme 
-              ? 'bg-[#1A1A2E]/60 border-white/10' 
-              : 'bg-white/50 border-white/20'
-          }`}>
+          {/* Page Content Container */}
+          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
             {children}
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
 import { mockEngines, mockParts, mockFinancials } from '@/data/mockData';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Message {
   id: number;
@@ -61,6 +62,7 @@ const getAnswer = (q: string): string => {
 
 const ChatWidget = () => {
   const [open, setOpen] = useState(false);
+  const { isDarkTheme } = useTheme();
   const [messages, setMessages] = useState<Message[]>([
     { id: 0, role: 'bot', text: 'Welcome to GEM India Assistant! Ask me about engines, parts, financials, or type "help" for options.' },
   ]);
@@ -96,7 +98,7 @@ const ChatWidget = () => {
             onClick={() => setOpen(true)}
             className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg btn-primary"
           >
-            <MessageCircle className="w-6 h-6 text-white" />
+            <MessageCircle className="w-6 h-6 text-primary-foreground" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -111,26 +113,35 @@ const ChatWidget = () => {
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed top-0 right-0 z-50 h-full w-full sm:w-96 flex flex-col"
             style={{
-              background: 'rgba(255, 255, 255, 0.82)',
+              background: isDarkTheme ? 'rgba(15, 19, 29, 0)' : 'rgba(255, 255, 255, 0)',
               backdropFilter: 'blur(30px)',
               WebkitBackdropFilter: 'blur(30px)',
-              borderLeft: '1px solid rgba(255, 255, 255, 0.8)',
-              boxShadow: '-4px 0 40px rgba(100, 120, 200, 0.12)',
+              borderLeft: isDarkTheme ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(255, 255, 255, 0)',
+              boxShadow: isDarkTheme ? '-4px 0 40px rgba(0, 0, 0, 0)' : '-4px 0 40px rgba(100, 120, 200, 0.12)',
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border/60">
+            <div
+              className={`flex items-center justify-between p-4 border-b ${
+                isDarkTheme ? 'border-white/10' : 'border-gray-200/60'
+              }`}
+            >
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-sm font-bold text-foreground">GEM Assistant</h3>
-                  <p className="text-xs text-muted-foreground font-body">AI-powered support</p>
+                  <h3 className={`font-heading text-sm font-bold ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
+                    GEM Assistant
+                  </h3>
+                  <p className={`text-xs font-body ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>AI-powered support</p>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/60 transition-colors">
-                <X className="w-5 h-5 text-muted-foreground" />
+              <button
+                onClick={() => setOpen(false)}
+                className={`p-1.5 rounded-lg transition-colors ${isDarkTheme ? 'hover:bg-white/10' : 'hover:bg-white/60'}`}
+              >
+                <X className={`w-5 h-5 ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'}`} />
               </button>
             </div>
 
@@ -152,14 +163,20 @@ const ChatWidget = () => {
                     className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-body whitespace-pre-line ${
                       m.role === 'user'
                         ? 'bg-primary text-white rounded-tr-sm'
-                        : 'bg-white/70 text-foreground border border-border/50 rounded-tl-sm'
+                        : isDarkTheme
+                          ? 'bg-[#0F0F1E]/60 text-gray-100 border border-white/10 rounded-tl-sm'
+                          : 'bg-white/70 text-gray-900 border border-gray-200/60 rounded-tl-sm'
                     }`}
                   >
                     {m.text}
                   </div>
                   {m.role === 'user' && (
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
-                      <User className="w-4 h-4 text-muted-foreground" />
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
+                        isDarkTheme ? 'bg-white/10' : 'bg-gray-200'
+                      }`}
+                    >
+                      <User className={`w-4 h-4 ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'}`} />
                     </div>
                   )}
                 </motion.div>
@@ -167,14 +184,18 @@ const ChatWidget = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-border/60">
+            <div className={`p-4 border-t ${isDarkTheme ? 'border-white/10' : 'border-gray-200/60'}`}>
               <div className="flex gap-2">
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && send()}
                   placeholder="Ask about engines, parts, revenue..."
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-body outline-none transition-all border border-border bg-white/60 focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-body outline-none transition-all border focus:ring-2 focus:ring-primary/20 ${
+                    isDarkTheme
+                      ? 'border-white/10 bg-[#0F0F1E]/50 text-white placeholder:text-gray-500'
+                      : 'border-gray-200/60 bg-white/60 text-gray-900 placeholder:text-gray-500'
+                  }`}
                 />
                 <button onClick={send} className="btn-primary px-3.5 py-2.5 rounded-xl">
                   <Send className="w-4 h-4" />
