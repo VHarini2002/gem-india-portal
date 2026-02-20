@@ -7,7 +7,7 @@ import AnimatedCounter from '@/components/AnimatedCounter';
 import EngineCard from '@/components/EngineCard';
 import PartsCatalog from '@/components/PartsCatalog';
 import { useNavigate } from 'react-router-dom';
-import { Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, Package } from 'lucide-react';
+import { Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, Package, ShoppingBag } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import AppLayout from '@/components/AppLayout';
 
@@ -60,22 +60,27 @@ const KAMDashboard = () => {
       <div className="min-h-full opacity-90">
         <div className="pt-4">
           {/* Welcome Message from Image */}
-          <div className="mb-12">
-            <h1 className={`text-4xl font-bold mb-2 ${
-              isDarkTheme ? 'text-white' : 'text-gray-900'
-            }`}>
-              Hi, {user?.name.split(' ')[0]}!
-            </h1>
-            <h2 className={`text-4xl font-bold mb-4 ${
-              isDarkTheme ? 'text-white' : 'text-gray-900'
-            }`}>
-              What are your plans for today?
-            </h2>
-            <p className={`max-w-md ${
-              isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Managing engines across all clients. Here's your operational overview for today.
-            </p>
+          <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1 className={`text-4xl font-bold mb-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
+                Hi, {user?.name.split(' ')[0]}!
+              </h1>
+              <h2 className={`text-4xl font-bold mb-4 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
+                What are your plans for today?
+              </h2>
+              <p className={`max-w-md ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
+                Managing engines across all clients. Here's your operational overview for today.
+              </p>
+            </div>
+            <button
+              onClick={() => setCatalogOpen(true)}
+              className="flex items-center gap-3 px-6 py-3 rounded-2xl font-heading font-semibold text-sm text-white transition-all hover:scale-105 shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', boxShadow: '0 4px 20px rgba(99,102,241,0.35)' }}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              Parts Catalog
+              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Sell</span>
+            </button>
           </div>
 
           <div className="max-w-8xl mx-auto px-6 pt-2 pb-12">
