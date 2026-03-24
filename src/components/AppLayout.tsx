@@ -2,40 +2,31 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
-  User,
-  Users,
-  Bell,
-  Settings,
-  Calendar,
   Folder,
-  Mail,
-  BarChart3,
-  RotateCcw,
-  Search,
+  HelpCircle,
+  Settings,
+  LogOut,
   Sun,
   Moon,
   Download,
   ChevronDown,
-  Plane,
-  Triangle
+  Calendar,
+  BarChart3,
+  Search
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoBackground from '@/components/VideoBackground';
-import ProfilePage from '@/pages/ProfilePage';
-import NotificationsPage from '@/pages/NotificationsPage';
 import SettingsPage from '@/pages/SettingsPage';
-import CalendarPage from '@/pages/CalendarPage';
 import FilesPage from '@/pages/FilesPage';
-import MessagesPage from '@/pages/MessagesPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-type PanelType = 'profile' | 'notifications' | 'settings' | 'calendar' | 'files' | 'messages' | 'analytics' | null;
+type PanelType = 'settings' | 'files' | 'analytics' | null;
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
@@ -45,26 +36,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const [activePanel, setActivePanel] = useState<PanelType>(null);
   const [fontSize, setFontSize] = useState('medium');
   const [portalView, setPortalView] = useState('default');
+  const [activeTopTab, setActiveTopTab] = useState<'dashboard' | 'calendar' | 'analytics'>('dashboard');
 
   const openPanel = (panel: PanelType) => setActivePanel(prev => prev === panel ? null : panel);
   const closePanel = () => setActivePanel(null);
 
-  const handleRefresh = () => window.location.reload();
   const handleLogout = () => { logout(); navigate('/'); };
 
   const navItems: { icon: any; panel?: PanelType; path?: string; label: string; action?: () => void }[] = [
     { icon: LayoutDashboard, path: '/dashboard', label: 'Dashboard' },
-    ...(user?.role === 'kam'
-      ? [{ icon: Users, path: '/manageClient', label: 'Manage Client' }]
-      : []),
-    { icon: User, panel: 'profile', label: 'Profile' },
-    { icon: Bell, panel: 'notifications', label: 'Notifications' },
-    { icon: Settings, panel: 'settings', label: 'Settings' },
-    { icon: Calendar, panel: 'calendar', label: 'Calendar' },
     { icon: Folder, panel: 'files', label: 'Files' },
-    { icon: Mail, panel: 'messages', label: 'Messages' },
-    { icon: BarChart3, panel: 'analytics', label: 'Analytics' },
-    { icon: RotateCcw, label: 'Refresh', action: handleRefresh },
+    { icon: HelpCircle, path: '/help', label: 'FAQ & Help' },
+    { icon: Settings, panel: 'settings', label: 'Settings' },
   ];
 
   const fontSizeClass = fontSize === 'small' ? 'text-xs' : fontSize === 'large' ? 'text-base' : 'text-sm';
@@ -73,9 +56,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <div className={`flex min-h-screen relative ${fontSizeClass}`}>
       <VideoBackground />
 
-      {/* Premium Side Panel */}
+      {/* Side Panel */}
       <aside
-        className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden"
+        className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden group/sidebar"
         style={{ background: 'linear-gradient(180deg,rgb(34,18,73) 0%,rgb(22,23,105) 50%,rgb(15,49,104) 100%)' }}
       >
         <div className="flex flex-col items-center gap-4 w-full px-2 flex-1 justify-start pt-2">
@@ -86,27 +69,43 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               ? activePanel === item.panel
               : false;
             return (
-              <button
-                key={item.label}
-                onClick={() => {
-                  if (item.action) item.action();
-                  else if (item.path) { closePanel(); navigate(item.path); }
-                  else if (item.panel) openPanel(item.panel);
-                }}
-                title={item.label}
-                className={`relative group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  isActive
-                    ? 'bg-white text-[#6366F1] shadow-lg shadow-white/20'
-                    : 'text-white/90 hover:bg-white/20 hover:text-white'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label === 'Notifications' && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border border-[#6366F1]" />
-                )}
-              </button>
+              <div key={item.label} className="relative group">
+                <button
+                  onClick={() => {
+                    if (item.action) item.action();
+                    else if (item.path) { closePanel(); navigate(item.path); }
+                    else if (item.panel) openPanel(item.panel);
+                  }}
+                  className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    isActive
+                      ? 'bg-white text-[#6366F1] shadow-lg shadow-white/20'
+                      : 'text-white/90 hover:bg-white/20 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                </button>
+                {/* Hover tooltip */}
+                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+                  {item.label}
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+                </div>
+              </div>
             );
           })}
+        </div>
+
+        {/* Logout at bottom */}
+        <div className="px-2 pb-2 relative group">
+          <button
+            onClick={handleLogout}
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:bg-red-500/20 hover:text-red-400 transition-all duration-300"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+            Log Out
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+          </div>
         </div>
       </aside>
 
@@ -114,18 +113,39 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <main className="flex-1 ml-28 p-8 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-8">
           {/* Top Navigation Bar */}
-          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40 opacity-90">
+          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
             <div className="flex items-center gap-8">
               <nav className="flex items-center gap-6">
-                <a href="#" className={`font-semibold border-b-2 border-indigo-500 pb-1 flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
+                <button
+                  onClick={() => { setActiveTopTab('dashboard'); closePanel(); }}
+                  className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
+                    activeTopTab === 'dashboard'
+                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
+                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                  }`}
+                >
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
-                </a>
-                <a href="#" className={`font-medium transition-colors flex items-center gap-2 ${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-900'}`}>
-                  <Plane className="w-4 h-4" /> Workflows
-                </a>
-                <a href="#" className={`font-medium transition-colors flex items-center gap-2 ${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-900'}`}>
-                  <Triangle className="w-4 h-4" /> Integrations
-                </a>
+                </button>
+                <button
+                  onClick={() => { setActiveTopTab('calendar'); closePanel(); }}
+                  className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
+                    activeTopTab === 'calendar'
+                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
+                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" /> Calendar
+                </button>
+                <button
+                  onClick={() => { setActiveTopTab('analytics'); closePanel(); }}
+                  className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
+                    activeTopTab === 'analytics'
+                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
+                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" /> Analytics
+                </button>
               </nav>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -149,7 +169,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </div>
               <div className={`h-8 w-[1px] mx-2 ${isDarkTheme ? 'bg-white/10' : 'bg-gray-200'}`} />
               <div className="flex items-center gap-4">
-                <div className={`flex items-center gap-2 px-3 py-1.5 border rounded-2xl text-sm font-medium ${isDarkTheme ? 'border-white/10 text-gray-300 bg-[#0F0F1E]/50' : 'border-gray-200 text-gray-700 bg-white/50'}`}>
+                <div className={`flex items-center gap-2 px-3 py-1.5 border rounded-2xl text-sm font-medium cursor-pointer ${isDarkTheme ? 'border-white/10 text-gray-300 bg-[#0F0F1E]/50' : 'border-gray-200 text-gray-700 bg-white/50'}`}>
                   <Download className="w-4 h-4" /> Export data <ChevronDown className="w-4 h-4" />
                 </div>
                 <button className="bg-[#6366F1] text-white px-6 py-2.5 rounded-2xl text-sm font-medium hover:bg-[#7C3AED] transition-all shadow-lg shadow-indigo-500/20" onClick={handleLogout}>
@@ -160,7 +180,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow opacity-90">
+          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
             {children}
           </div>
         </div>
@@ -168,8 +188,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* Overlay Panels */}
       <AnimatePresence>
-        {activePanel === 'profile' && <ProfilePage onClose={closePanel} />}
-        {activePanel === 'notifications' && <NotificationsPage onClose={closePanel} />}
         {activePanel === 'settings' && (
           <SettingsPage
             onClose={closePanel}
@@ -179,9 +197,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             setPortalView={setPortalView}
           />
         )}
-        {activePanel === 'calendar' && <CalendarPage onClose={closePanel} />}
         {activePanel === 'files' && <FilesPage onClose={closePanel} />}
-        {activePanel === 'messages' && <MessagesPage onClose={closePanel} />}
         {activePanel === 'analytics' && <AnalyticsPage onClose={closePanel} />}
       </AnimatePresence>
     </div>

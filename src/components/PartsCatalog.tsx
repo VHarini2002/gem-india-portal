@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, X, Mail, Package, Search } from 'lucide-react';
 import { mockParts, mockEngines } from '@/data/mockData';
 import type { Part } from '@/data/mockData';
-import { useTheme } from '@/contexts/ThemeContext';
 
 const partDescriptions: Record<string, string> = {
   'PN-73': 'High Pressure Turbine Blade',
@@ -41,7 +40,6 @@ interface PartsCatalogProps {
 }
 
 const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
-  const { isDarkTheme } = useTheme();
   const [cart, setCart] = useState<Part[]>([]);
   const [search, setSearch] = useState('');
   const [showCart, setShowCart] = useState(false);
@@ -75,81 +73,47 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
-          className={`fixed inset-4 sm:inset-8 z-50 rounded-2xl flex flex-col overflow-hidden ${
-            isDarkTheme ? 'glass-card-glow bg-slate-900/90' : 'bg-white shadow-2xl'
-          }`}
+          className="fixed inset-4 sm:inset-8 z-50 glass-card-glow rounded-2xl flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className={`p-5 border-b flex items-center justify-between flex-shrink-0 ${
-            isDarkTheme ? 'border-white/10 bg-slate-900/95' : 'border-border/40 bg-white'
-          }`}>
+          <div className="p-5 border-b border-border/40 flex items-center justify-between flex-shrink-0 bg-white/30">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Package className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h2 className={`font-heading text-base font-bold ${
-                  isDarkTheme ? 'text-white' : 'text-foreground'
-                }`}>
-                  Parts Catalog
-                </h2>
-                <span className={`text-xs font-body ${
-                  isDarkTheme ? 'text-gray-400' : 'text-muted-foreground'
-                }`}>
-                  {filtered.length} parts available for sale
-                </span>
+                <h2 className="font-heading text-base font-bold text-foreground">Parts Catalog</h2>
+                <span className="text-xs font-body text-muted-foreground">{filtered.length} parts available for sale</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowCart(!showCart)}
-                className={`py-2 px-3 text-xs flex items-center gap-2 relative rounded-xl border transition-colors ${
-                  isDarkTheme
-                    ? 'bg-white/5 border-white/10 text-gray-100 hover:bg-white/10'
-                    : 'bg-white border-border/40 text-gray-900 hover:bg-gray-50'
-                }`}
-              >
+              <button onClick={() => setShowCart(!showCart)} className="btn-secondary py-2 px-3 text-xs flex items-center gap-2 relative rounded-xl">
                 <ShoppingCart className="w-4 h-4" /> Cart
                 {cart.length > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-white text-[10px] font-heading font-bold flex items-center justify-center">{cart.length}</span>
                 )}
               </button>
-              <button
-                onClick={onClose}
-                className={`p-2 rounded-xl transition-colors ${
-                  isDarkTheme ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                }`}
-              >
-                <X className={`w-5 h-5 ${
-                  isDarkTheme ? 'text-gray-400' : 'text-muted-foreground'
-                }`} />
+              <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/60 transition-colors">
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
           </div>
 
           {/* Search */}
-          <div className={`px-5 py-3 border-b flex-shrink-0 ${
-            isDarkTheme ? 'border-white/10 bg-slate-900/90' : 'border-border/20 bg-white'
-          }`}>
+          <div className="px-5 py-3 border-b border-border/20 flex-shrink-0 bg-white/20">
             <div className="relative">
-              <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${
-                isDarkTheme ? 'text-gray-500' : 'text-muted-foreground'
-              }`} />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search parts by number or description..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full pl-11 pr-4 py-2.5 rounded-xl border text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                  isDarkTheme
-                    ? 'bg-white/5 border-white/15 text-white placeholder:text-gray-500'
-                    : 'bg-white/60 border-border/40 text-foreground placeholder:text-muted-foreground'
-                }`}
+                className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-white/60 border border-border/40 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -162,22 +126,10 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
                   const inCart = cart.some(c => c.id === part.id);
                   const engine = mockEngines.find(e => e.id === part.engineId);
                   return (
-                    <motion.div
-                      key={part.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className={`rounded-2xl overflow-hidden group transition-all ${
-                        isDarkTheme
-                          ? 'bg-slate-900/80 border border-white/10 hover:border-primary/60 hover:shadow-lg'
-                          : 'glass-card hover:shadow-lg'
-                      }`}
-                    >
+                    <motion.div key={part.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="glass-card rounded-2xl overflow-hidden group hover:shadow-lg transition-all">
                       <div className="h-36 overflow-hidden relative">
                         <img src={getImage(part.id)} alt={getDescription(part.partNumber)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className={`absolute inset-0 bg-gradient-to-t ${
-                          isDarkTheme ? 'from-slate-950/90 to-transparent' : 'from-white/80 to-transparent'
-                        }`} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent" />
                         <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-heading font-semibold ${
                           part.condition === 'Serviceable' ? 'bg-green-50 text-success border border-green-200' :
                           part.condition === 'Overhauled' ? 'bg-blue-50 text-primary border border-blue-200' :
@@ -186,32 +138,16 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
                       </div>
                       <div className="p-4 space-y-2">
                         <p className="font-heading text-sm font-bold text-primary">{part.partNumber}</p>
-                        <p className={`text-xs font-body ${
-                          isDarkTheme ? 'text-gray-400' : 'text-muted-foreground'
-                        }`}>x``
-                          {getDescription(part.partNumber)}
-                        </p>
-                        <p className={`font-heading text-lg font-bold ${
-                          isDarkTheme ? 'text-white' : 'text-foreground'
-                        }`}>
-                          ${part.price?.toLocaleString()}
-                        </p>
-                        <div className={`text-[10px] font-body space-y-0.5 rounded-lg p-2 ${
-                          isDarkTheme
-                            ? 'bg-white/5 text-gray-300'
-                            : 'bg-white/40 text-muted-foreground'
-                        }`}>
+                        <p className="text-xs font-body text-muted-foreground">{getDescription(part.partNumber)}</p>
+                        <p className="font-heading text-lg font-bold text-foreground">${part.price?.toLocaleString()}</p>
+                        <div className="text-[10px] font-body text-muted-foreground space-y-0.5 bg-white/40 rounded-lg p-2">
                           <p>SN: {part.serialNumber}</p>
                           <p>From: {engine?.esn}</p>
                           <p>Cert: {part.certification}</p>
                         </div>
                         <button
                           onClick={() => inCart ? removeFromCart(part.id) : addToCart(part)}
-                          className={`w-full py-2 rounded-xl text-xs font-heading font-semibold transition-all ${
-                            inCart
-                              ? 'bg-red-50 text-destructive border border-red-200 hover:bg-red-100'
-                              : 'btn-primary'
-                          }`}
+                          className={`w-full py-2 rounded-xl text-xs font-heading font-semibold transition-all ${inCart ? 'bg-red-50 text-destructive border border-red-200 hover:bg-red-100' : 'btn-primary'}`}
                         >
                           {inCart ? 'Remove from Cart' : 'Add to Cart'}
                         </button>
@@ -225,33 +161,9 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
             {/* Cart Sidebar */}
             <AnimatePresence>
               {showCart && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 320, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  className={`border-l flex flex-col overflow-hidden flex-shrink-0 ${
-                    isDarkTheme ? 'border-white/10 bg-slate-900/95' : 'border-border/40 bg-white'
-                  }`}
-                >
-                  <div className="p-4 border-b border-border/30 flex items-center justify-between gap-2">
-                    <h3 className={`font-heading text-sm font-bold ${
-                      isDarkTheme ? 'text-white' : 'text-foreground'
-                    }`}>
-                      Cart ({cart.length})
-                    </h3>
-                    {cart.length > 0 && (
-                      <button
-                        onClick={contactKAM}
-                        className={`text-[11px] px-3 py-1.5 rounded-xl font-heading font-semibold flex items-center gap-1.5 ${
-                          isDarkTheme
-                            ? 'bg-primary/90 text-white hover:bg-primary'
-                            : 'bg-primary text-white hover:bg-primary/90'
-                        }`}
-                      >
-                        <Mail className="w-3.5 h-3.5" />
-                        Contact KAM
-                      </button>
-                    )}
+                <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 320, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="border-l border-border/40 flex flex-col overflow-hidden flex-shrink-0 bg-white/40">
+                  <div className="p-4 border-b border-border/30">
+                    <h3 className="font-heading text-sm font-bold text-foreground">Cart ({cart.length})</h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {cart.length === 0 ? (
@@ -261,24 +173,11 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
                       </div>
                     ) : (
                       cart.map(p => (
-                        <div
-                          key={p.id}
-                          className={`border p-3 rounded-xl flex items-center gap-3 ${
-                            isDarkTheme ? 'bg-white/5 border-white/10' : 'bg-white/60 border-border/40'
-                          }`}
-                        >
+                        <div key={p.id} className="bg-white/60 border border-border/40 p-3 rounded-xl flex items-center gap-3">
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-heading font-bold text-primary truncate">{p.partNumber}</p>
-                            <p className={`text-[10px] font-body truncate ${
-                              isDarkTheme ? 'text-gray-400' : 'text-muted-foreground'
-                            }`}>
-                              {getDescription(p.partNumber)}
-                            </p>
-                            <p className={`text-xs font-heading font-semibold ${
-                              isDarkTheme ? 'text-white' : 'text-foreground'
-                            }`}>
-                              ${p.price?.toLocaleString()}
-                            </p>
+                            <p className="text-[10px] font-body text-muted-foreground truncate">{getDescription(p.partNumber)}</p>
+                            <p className="text-xs font-heading font-semibold text-foreground">${p.price?.toLocaleString()}</p>
                           </div>
                           <button onClick={() => removeFromCart(p.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors">
                             <X className="w-3.5 h-3.5 text-destructive" />
@@ -288,21 +187,14 @@ const PartsCatalog = ({ open, onClose }: PartsCatalogProps) => {
                     )}
                   </div>
                   {cart.length > 0 && (
-                    <div className={`p-4 border-t space-y-3 ${
-                      isDarkTheme ? 'border-white/10' : 'border-border/30'
-                    }`}>
+                    <div className="p-4 border-t border-border/30 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs font-body ${
-                          isDarkTheme ? 'text-gray-400' : 'text-muted-foreground'
-                        }`}>
-                          Total Quoted
-                        </span>
-                        <span className={`font-heading text-sm font-bold ${
-                          isDarkTheme ? 'text-white' : 'text-foreground'
-                        }`}>
-                          ${cart.reduce((s, p) => s + (p.price || 0), 0).toLocaleString()}
-                        </span>
+                        <span className="text-xs font-body text-muted-foreground">Total Quoted</span>
+                        <span className="font-heading text-sm font-bold text-foreground">${cart.reduce((s, p) => s + (p.price || 0), 0).toLocaleString()}</span>
                       </div>
+                      <button onClick={contactKAM} className="btn-primary w-full py-3 text-xs flex items-center justify-center gap-2 rounded-xl">
+                        <Mail className="w-4 h-4" /> Contact KAM
+                      </button>
                     </div>
                   )}
                 </motion.div>
