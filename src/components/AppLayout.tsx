@@ -182,7 +182,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
           {/* Page Content */}
           <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
-            {children}
+            {activeTopTab === 'dashboard' && children}
+            {activeTopTab === 'calendar' && <InlineCalendar />}
+            {activeTopTab === 'analytics' && <InlineAnalytics />}
           </div>
         </div>
       </main>
@@ -199,7 +201,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           />
         )}
         {activePanel === 'files' && <FilesPage onClose={closePanel} />}
-        {activePanel === 'analytics' && <AnalyticsPage onClose={closePanel} />}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default AppLayout;
       </AnimatePresence>
     </div>
   );
