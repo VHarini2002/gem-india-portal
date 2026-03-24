@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   User,
+  Users,
   Bell,
   Settings,
   Calendar,
@@ -53,6 +54,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   const navItems: { icon: any; panel?: PanelType; path?: string; label: string; action?: () => void }[] = [
     { icon: LayoutDashboard, path: '/dashboard', label: 'Dashboard' },
+    ...(user?.role === 'kam'
+      ? [{ icon: Users, path: '/manageClient', label: 'Manage Client' }]
+      : []),
     { icon: User, panel: 'profile', label: 'Profile' },
     { icon: Bell, panel: 'notifications', label: 'Notifications' },
     { icon: Settings, panel: 'settings', label: 'Settings' },
@@ -110,7 +114,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <main className="flex-1 ml-28 p-8 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-8">
           {/* Top Navigation Bar */}
-          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
+          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40 opacity-90">
             <div className="flex items-center gap-8">
               <nav className="flex items-center gap-6">
                 <a href="#" className={`font-semibold border-b-2 border-indigo-500 pb-1 flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
@@ -156,7 +160,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
+          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow opacity-90">
             {children}
           </div>
         </div>
