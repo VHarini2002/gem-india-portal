@@ -20,7 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import VideoBackground from '@/components/VideoBackground';
 import SettingsPage from '@/pages/SettingsPage';
 import FilesPage from '@/pages/FilesPage';
-import AnalyticsPage from '@/pages/AnalyticsPage';
+import InlineCalendar from '@/components/InlineCalendar';
+import InlineAnalytics from '@/components/InlineAnalytics';
 
 interface AppLayoutProps {
   children: React.ReactNode;
