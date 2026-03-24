@@ -207,9 +207,3 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 };
 
 export default AppLayout;
-      </AnimatePresence>
-    </div>
-  );
-};
-
-export default AppLayout;
