@@ -11,6 +11,7 @@ import EngineDetail from "./pages/EngineDetail";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import ChatWidget from "./components/ChatWidget";
+import PublicPartsCatalog from "./pages/PublicPartsCatalog";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/engine/:id" element={<EngineDetail />} />
               <Route path="/help" element={<Help />} />
+              <Route path="/catalog" element={<PublicPartsCatalog />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <ChatWidget />
