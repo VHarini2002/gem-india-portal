@@ -1,23 +1,21 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Engine } from '@/data/mockData';
-import { useTheme } from '@/contexts/ThemeContext';
 import { MapPin, Truck, Clock, ArrowRight } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
-  'In Transit': { label: 'In Transit', cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/25' },
-  'In Repair': { label: 'In Repair', cls: 'bg-blue-500/15 text-blue-400 border border-blue-500/25' },
-  'In Storage': { label: 'In Storage', cls: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/25' },
-  'Disassembly': { label: 'Disassembly', cls: 'bg-purple-500/15 text-purple-400 border border-purple-500/25' },
-  'Inspection': { label: 'Inspection', cls: 'bg-orange-500/15 text-orange-400 border border-orange-500/25' },
-  'Ready for Release': { label: 'Ready', cls: 'bg-green-500/15 text-green-400 border border-green-500/25' },
+  'In Transit': { label: 'In Transit', cls: 'bg-warning/15 text-warning border border-warning/25' },
+  'In Repair': { label: 'In Repair', cls: 'bg-primary/15 text-primary border border-primary/25' },
+  'In Storage': { label: 'In Storage', cls: 'bg-success/15 text-success border border-success/25' },
+  'Disassembly': { label: 'Disassembly', cls: 'bg-purple-500/15 text-purple-500 border border-purple-500/25' },
+  'Inspection': { label: 'Inspection', cls: 'bg-orange-500/15 text-orange-500 border border-orange-500/25' },
+  'Ready for Release': { label: 'Ready', cls: 'bg-success/15 text-success border border-success/25' },
   'Completed': { label: 'Completed', cls: 'bg-primary/15 text-primary border border-primary/25' },
-  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-500/15 text-teal-400 border border-teal-500/25' },
+  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-500/15 text-teal-500 border border-teal-500/25' },
 };
 
 const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
   const navigate = useNavigate();
-  const { isDarkTheme } = useTheme();
   const status = statusConfig[engine.status] || { label: engine.status, cls: 'bg-muted/50 text-foreground border border-border' };
 
   return (
@@ -31,11 +29,7 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <p className={`font-body text-xs ${
-            isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            ESN
-          </p>
+          <p className="font-body text-xs text-muted-foreground">ESN</p>
           <p className="font-heading text-sm font-bold text-primary mt-0.5">{engine.esn}</p>
         </div>
         <span className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${status.cls}`}>
@@ -49,33 +43,17 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
           { label: 'Client', value: engine.clientName },
         ].map(row => (
           <div key={row.label} className="flex justify-between text-sm">
-            <span className={`font-body ${
-              isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              {row.label}
-            </span>
-            <span className={`font-body font-medium ${
-              isDarkTheme ? 'text-white' : 'text-gray-900'
-            }`}>
-              {row.value}
-            </span>
+            <span className="font-body text-muted-foreground">{row.label}</span>
+            <span className="font-body font-medium text-foreground">{row.value}</span>
           </div>
         ))}
         <div className="flex justify-between text-sm">
-          <span className={`font-body ${
-            isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            Service
-          </span>
+          <span className="font-body text-muted-foreground">Service</span>
           <span className="text-primary text-xs font-heading font-semibold">{engine.serviceType}</span>
         </div>
       </div>
 
-      <div className={`flex items-center gap-2 text-xs mb-4 font-body rounded-xl px-3 py-2 ${
-        isDarkTheme 
-          ? 'bg-white/5 text-gray-400' 
-          : 'bg-gray-100/50 text-gray-600'
-      }`}>
+      <div className="flex items-center gap-2 text-xs mb-4 font-body rounded-xl px-3 py-2 bg-muted/40 text-muted-foreground">
         <MapPin className="w-3 h-3 flex-shrink-0" />
         <span className="truncate">{engine.currentLocation}</span>
         <Truck className="w-3 h-3 ml-auto flex-shrink-0" />
@@ -85,11 +63,7 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
       {/* Progress Bar */}
       <div className="mb-3">
         <div className="flex justify-between text-xs mb-1.5">
-          <span className={`font-body ${
-            isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            Progress
-          </span>
+          <span className="font-body text-muted-foreground">Progress</span>
           <span className="text-primary font-heading font-semibold">{engine.progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -102,18 +76,12 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
         </div>
       </div>
 
-      <div className={`flex justify-between items-center pt-3 border-t ${
-        isDarkTheme ? 'border-white/8' : 'border-gray-200'
-      }`}>
-        <div className={`flex items-center gap-1.5 text-xs font-body ${
-          isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-        }`}>
+      <div className="flex justify-between items-center pt-3 border-t border-border/50">
+        <div className="flex items-center gap-1.5 text-xs font-body text-muted-foreground">
           <Clock className="w-3 h-3" />
           <span>{engine.lastUpdated}</span>
         </div>
-        <ArrowRight className={`w-4 h-4 group-hover:text-primary transition-colors ${
-          isDarkTheme ? 'text-gray-400' : 'text-gray-600'
-        }`} />
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </motion.div>
   );
