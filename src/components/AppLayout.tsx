@@ -57,11 +57,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <div className={`flex min-h-screen relative ${fontSizeClass}`}>
       <VideoBackground />
 
-      {/* Side Panel */}
-      <aside
-        className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden group/sidebar"
-        style={{ background: 'linear-gradient(180deg,rgb(34,18,73) 0%,rgb(22,23,105) 50%,rgb(15,49,104) 100%)' }}
-      >
+      {/* Side Panel — purple gradient pill */}
+      <aside className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden group/sidebar glass-sidebar">
         <div className="flex flex-col items-center gap-4 w-full px-2 flex-1 justify-start pt-2">
           {navItems.map((item) => {
             const isActive = item.path
@@ -79,16 +76,16 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   }}
                   className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isActive
-                      ? 'bg-white text-[#6366F1] shadow-lg shadow-white/20'
+                      ? 'bg-white text-primary shadow-lg shadow-white/20'
                       : 'text-white/90 hover:bg-white/20 hover:text-white'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                 </button>
                 {/* Hover tooltip */}
-                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
                   {item.label}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
                 </div>
               </div>
             );
@@ -99,13 +96,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="px-2 pb-2 relative group">
           <button
             onClick={handleLogout}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:bg-red-500/20 hover:text-red-400 transition-all duration-300"
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:bg-destructive/20 hover:text-destructive transition-all duration-300"
           >
             <LogOut className="w-5 h-5" />
           </button>
-          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
             Log Out
-            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
           </div>
         </div>
       </aside>
@@ -121,8 +118,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   onClick={() => { setActiveTopTab('dashboard'); closePanel(); }}
                   className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
                     activeTopTab === 'dashboard'
-                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
-                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                      ? 'border-b-2 border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
@@ -131,8 +128,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   onClick={() => { setActiveTopTab('calendar'); closePanel(); }}
                   className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
                     activeTopTab === 'calendar'
-                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
-                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                      ? 'border-b-2 border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Calendar className="w-4 h-4" /> Calendar
@@ -141,39 +138,37 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   onClick={() => { setActiveTopTab('analytics'); closePanel(); }}
                   className={`font-semibold pb-1 flex items-center gap-2 transition-all ${
                     activeTopTab === 'analytics'
-                      ? `border-b-2 border-indigo-500 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`
-                      : `${isDarkTheme ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`
+                      ? 'border-b-2 border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <BarChart3 className="w-4 h-4" /> Analytics
                 </button>
               </nav>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search or type command"
-                  className={`border-none rounded-2xl py-2 pl-12 pr-4 w-64 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none text-sm ${
-                    isDarkTheme ? 'bg-[#0F0F1E]/50 text-white placeholder-gray-500' : 'bg-gray-100/50 text-gray-900'
-                  }`}
+                  className="border border-border/50 bg-muted/40 rounded-2xl py-2 pl-12 pr-4 w-64 focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm text-foreground placeholder:text-muted-foreground"
                 />
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className={`flex items-center rounded-2xl p-1 gap-1 ${isDarkTheme ? 'bg-[#0F0F1E]/50' : 'bg-gray-100/50'}`}>
-                <button onClick={() => setIsDarkTheme(false)} className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${!isDarkTheme ? 'bg-white shadow-sm text-indigo-500' : 'text-gray-400 hover:text-white'}`}>
+              <div className="flex items-center rounded-2xl p-1 gap-1 bg-muted/50">
+                <button onClick={() => setIsDarkTheme(false)} className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${!isDarkTheme ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
                   <Sun className="w-3.5 h-3.5" /> Light
                 </button>
-                <button onClick={() => setIsDarkTheme(true)} className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${isDarkTheme ? 'bg-white/20 text-white shadow-sm' : 'text-gray-500 hover:bg-white/50'}`}>
+                <button onClick={() => setIsDarkTheme(true)} className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${isDarkTheme ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
                   <Moon className="w-3.5 h-3.5" /> Dark
                 </button>
               </div>
-              <div className={`h-8 w-[1px] mx-2 ${isDarkTheme ? 'bg-white/10' : 'bg-gray-200'}`} />
+              <div className="h-8 w-[1px] mx-2 bg-border/50" />
               <div className="flex items-center gap-4">
-                <div className={`flex items-center gap-2 px-3 py-1.5 border rounded-2xl text-sm font-medium cursor-pointer ${isDarkTheme ? 'border-white/10 text-gray-300 bg-[#0F0F1E]/50' : 'border-gray-200 text-gray-700 bg-white/50'}`}>
+                <div className="flex items-center gap-2 px-3 py-1.5 border border-border/50 rounded-2xl text-sm font-medium cursor-pointer bg-muted/30 text-foreground hover:bg-muted/50 transition-all">
                   <Download className="w-4 h-4" /> Export data <ChevronDown className="w-4 h-4" />
                 </div>
-                <button className="bg-[#6366F1] text-white px-6 py-2.5 rounded-2xl text-sm font-medium hover:bg-[#7C3AED] transition-all shadow-lg shadow-indigo-500/20" onClick={handleLogout}>
+                <button className="bg-primary text-primary-foreground px-6 py-2.5 rounded-2xl text-sm font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/20" onClick={handleLogout}>
                   Sign Out
                 </button>
               </div>
