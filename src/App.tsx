@@ -22,7 +22,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <BrowserRouter basename="/gem-india-portal/">
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/dashboard/*" element={<Dashboard />} />
