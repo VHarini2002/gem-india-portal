@@ -1,27 +1,41 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { mockEngines, mockFinancials } from '@/data/mockData';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import EngineCard from '@/components/EngineCard';
 import PartsCatalog from '@/components/PartsCatalog';
 import VideoBackground from '@/components/VideoBackground';
-import KAMSidebar, { KAMModule } from '@/components/kam/KAMSidebar';
+import KAMSidebar, { KAMModule, KAMSidebarAction } from '@/components/kam/KAMSidebar';
 import EngineManagement from '@/components/kam/EngineManagement';
 import ClientManagement from '@/components/kam/ClientManagement';
 import FolderManagement from '@/components/kam/FolderManagement';
 import PartManagement from '@/components/kam/PartManagement';
 import InlineCalendar from '@/components/InlineCalendar';
 import InlineAnalytics from '@/components/InlineAnalytics';
-import { Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, ShoppingBag, LayoutDashboard, Calendar, BarChart3, Filter, X, Search } from 'lucide-react';
+import SettingsPage from '@/pages/SettingsPage';
+import NotificationsPage from '@/pages/NotificationsPage';
+import { Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, ShoppingBag, LayoutDashboard, Calendar, BarChart3, Filter, X, Search, Sun, Moon } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { createPortal } from 'react-dom';
 
 const KAMDashboard = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isDarkTheme, setIsDarkTheme } = useTheme();
   const [activeModule, setActiveModule] = useState<KAMModule>('dashboard');
   const [dashboardTab, setDashboardTab] = useState<'dashboard' | 'calendar' | 'analytics'>('dashboard');
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<'settings' | 'notifications' | null>(null);
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => sessionStorage.getItem('kam-sidebar-locked') === 'true');
+  const [fontSize, setFontSize] = useState('medium');
+  const [portalView, setPortalView] = useState('default');
   const [search, setSearch] = useState('');
+
+  const showDashboardUI = activeModule === 'dashboard' || activeModule === 'engine-management' || activeModule === 'client-management';
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -80,6 +94,86 @@ const KAMDashboard = () => {
   const activeFilterCount = filterStatus.length + filterService.length + filterClient.length + filterModel.length;
 
   const clearFilters = () => { setFilterStatus([]); setFilterService([]); setFilterClient([]); setFilterModel([]); };
+  const handleSidebarAction = (action: KAMSidebarAction) => setActivePanel(action);
+
+  const dashboardPath = (tab: 'dashboard' | 'calendar' | 'analytics') =>
+    tab === 'dashboard' ? '/dashboard' : `/dashboard/${tab}`;
+
+  const modulePath = (module: KAMModule) => {
+    switch (module) {
+      case 'dashboard':
+        return '/dashboard';
+      case 'engine-management':
+        return '/dashboard/engine-management';
+      case 'client-management':
+        return '/dashboard/client-management';
+      case 'folder-management':
+        return '/dashboard/folder-management';
+      case 'part-management':
+        return '/dashboard/part-management';
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const handleDashboardTabChange = (tab: 'dashboard' | 'calendar' | 'analytics') => {
+    setDashboardTab(tab);
+    setActiveModule('dashboard');
+    navigate(dashboardPath(tab));
+  };
+
+  const handleSidebarModuleChange = (module: KAMModule) => {
+    setActiveModule(module);
+    setActivePanel(null);
+    setCatalogOpen(false);
+    setShowFilters(false);
+
+    navigate(modulePath(module));
+    if (module === 'dashboard' || module === 'engine-management' || module === 'client-management') setDashboardTab('dashboard');
+  };
+
+  const closeEngineClientDialog = () => {
+    setActiveModule('dashboard');
+    setActivePanel(null);
+    navigate(dashboardPath(dashboardTab));
+  };
+
+  useEffect(() => {
+    const afterDashboard = location.pathname.startsWith('/dashboard')
+      ? location.pathname.slice('/dashboard'.length)
+      : '';
+    const seg = afterDashboard.split('/').filter(Boolean)[0];
+
+    if (!seg || seg === 'dashboard') {
+      setActiveModule('dashboard');
+      setDashboardTab('dashboard');
+      setActivePanel(null);
+      setCatalogOpen(false);
+      return;
+    }
+
+    if (seg === 'calendar' || seg === 'analytics') {
+      setActiveModule('dashboard');
+      setDashboardTab(seg);
+      setActivePanel(null);
+      setCatalogOpen(false);
+      return;
+    }
+
+    if (seg === 'engine-management' || seg === 'client-management') {
+      setActiveModule(seg as KAMModule);
+      setDashboardTab('dashboard');
+      setActivePanel(null);
+      setCatalogOpen(false);
+      return;
+    }
+
+    if (seg === 'folder-management' || seg === 'part-management') {
+      setActiveModule(seg as KAMModule);
+      setActivePanel(null);
+      setCatalogOpen(false);
+    }
+  }, [location.pathname]);
 
   const FilterSection = ({ title, options, selected, onToggle }: { title: string; options: string[]; selected: string[]; onToggle: (v: string) => void }) => (
     <div>
@@ -100,21 +194,30 @@ const KAMDashboard = () => {
   return (
     <div className="flex min-h-screen relative">
       <VideoBackground />
-      <KAMSidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+      <KAMSidebar
+        activeModule={activeModule}
+        onModuleChange={handleSidebarModuleChange}
+        onAction={handleSidebarAction}
+        onExpandedChange={setSidebarExpanded}
+      />
 
-      <main className="flex-1 ml-28 p-8 min-h-screen relative z-10">
+      <main
+        className={`flex-1 p-8 min-h-screen relative z-10 transition-[margin-left] duration-300 ${
+          sidebarExpanded ? 'ml-80' : 'ml-28'
+        }`}
+      >
         <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-6">
           {/* Header */}
           <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
             <div className="flex items-center gap-6">
-              {activeModule === 'dashboard' && (
+              {showDashboardUI && (
                 <nav className="flex items-center gap-4">
                   {[
                     { key: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
                     { key: 'calendar' as const, label: 'Calendar', icon: Calendar },
                     { key: 'analytics' as const, label: 'Analytics', icon: BarChart3 },
                   ].map(t => (
-                    <button key={t.key} onClick={() => setDashboardTab(t.key)}
+                    <button key={t.key} onClick={() => handleDashboardTabChange(t.key)}
                       className={`font-semibold pb-1 flex items-center gap-2 transition-all text-sm ${
                         dashboardTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
                       }`}>
@@ -123,7 +226,7 @@ const KAMDashboard = () => {
                   ))}
                 </nav>
               )}
-              {activeModule !== 'dashboard' && (
+              {!showDashboardUI && (
                 <h2 className="font-heading text-sm font-bold text-foreground capitalize">{activeModule.replace('-', ' ')}</h2>
               )}
               <div className="relative">
@@ -133,7 +236,7 @@ const KAMDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {activeModule === 'dashboard' && dashboardTab === 'dashboard' && (
+              {showDashboardUI && dashboardTab === 'dashboard' && (
                 <button onClick={() => setShowFilters(!showFilters)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${showFilters ? 'bg-primary text-white' : 'glass-card text-muted-foreground hover:text-foreground'}`}>
                   <Filter className="w-4 h-4" /> Filters {activeFilterCount > 0 && <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px]">{activeFilterCount}</span>}
@@ -143,12 +246,72 @@ const KAMDashboard = () => {
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/80 transition-all shadow-lg shadow-primary/20">
                 <ShoppingBag className="w-4 h-4" /> Parts Catalog
               </button>
+              <div className="flex items-center rounded-2xl p-1 gap-1 bg-muted/50">
+                <button
+                  onClick={() => setIsDarkTheme(false)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${
+                    !isDarkTheme ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Sun className="w-3.5 h-3.5" /> Light
+                </button>
+                <button
+                  onClick={() => setIsDarkTheme(true)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all ${
+                    isDarkTheme ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Moon className="w-3.5 h-3.5" /> Dark
+                </button>
+              </div>
             </div>
           </header>
 
           {/* Content */}
           <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
-            {activeModule === 'dashboard' && dashboardTab === 'dashboard' && (
+            {/* Nested breadcrumb for URLs like /dashboard/calendar */}
+            <nav className="text-xs text-muted-foreground flex items-center gap-2 mb-6">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </button>
+              {activeModule === 'dashboard' && dashboardTab !== 'dashboard' && (
+                <>
+                  <span>/</span>
+                  <span className="text-foreground">
+                    {dashboardTab === 'calendar' ? 'Calendar' : 'Analytics'}
+                  </span>
+                </>
+              )}
+              {activeModule === 'engine-management' && (
+                <>
+                  <span>/</span>
+                  <span className="text-foreground">Engine Management</span>
+                </>
+              )}
+              {activeModule === 'client-management' && (
+                <>
+                  <span>/</span>
+                  <span className="text-foreground">Client Management</span>
+                </>
+              )}
+              {activeModule === 'folder-management' && (
+                <>
+                  <span>/</span>
+                  <span className="text-foreground">Folder Management</span>
+                </>
+              )}
+              {activeModule === 'part-management' && (
+                <>
+                  <span>/</span>
+                  <span className="text-foreground">Part Management</span>
+                </>
+              )}
+            </nav>
+
+            {showDashboardUI && dashboardTab === 'dashboard' && (
               <div>
                 {/* Welcome */}
                 <div className="mb-6">
@@ -254,8 +417,6 @@ const KAMDashboard = () => {
 
             {activeModule === 'dashboard' && dashboardTab === 'calendar' && <InlineCalendar />}
             {activeModule === 'dashboard' && dashboardTab === 'analytics' && <InlineAnalytics />}
-            {activeModule === 'engine-management' && <EngineManagement />}
-            {activeModule === 'client-management' && <ClientManagement />}
             {activeModule === 'folder-management' && <FolderManagement />}
             {activeModule === 'part-management' && <PartManagement />}
           </div>
@@ -263,6 +424,100 @@ const KAMDashboard = () => {
       </main>
 
       <PartsCatalog open={catalogOpen} onClose={() => setCatalogOpen(false)} />
+      <AnimatePresence>
+        {/* Engine Management as dialog */}
+        {activeModule === 'engine-management' && (
+          createPortal(
+            <motion.div
+              key="engine-management-dialog"
+              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeEngineClientDialog}
+            >
+              <motion.div
+                initial={{ scale: 0.98, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.98, opacity: 0 }}
+                transition={{ type: 'spring', damping: 22 }}
+                className="relative w-full max-w-5xl h-[82vh] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-5 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
+                    <h3 className="font-heading text-base font-bold text-foreground">Engine Management</h3>
+                  </div>
+                  <button
+                    onClick={closeEngineClientDialog}
+                    className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                    aria-label="Close engine management dialog"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="h-[calc(82vh-64px)] overflow-auto p-5">
+                  <EngineManagement />
+                </div>
+              </motion.div>
+            </motion.div>,
+            document.body
+          )
+        )}
+
+        {/* Client Management as dialog */}
+        {activeModule === 'client-management' && (
+          createPortal(
+            <motion.div
+              key="client-management-dialog"
+              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeEngineClientDialog}
+            >
+              <motion.div
+                initial={{ scale: 0.98, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.98, opacity: 0 }}
+                transition={{ type: 'spring', damping: 22 }}
+                className="relative w-full max-w-5xl h-[82vh] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-5 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
+                    <h3 className="font-heading text-base font-bold text-foreground">Client Management</h3>
+                  </div>
+                  <button
+                    onClick={closeEngineClientDialog}
+                    className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                    aria-label="Close client management dialog"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="h-[calc(82vh-64px)] overflow-auto p-5">
+                  <ClientManagement />
+                </div>
+              </motion.div>
+            </motion.div>,
+            document.body
+          )
+        )}
+
+        {activePanel === 'settings' && (
+          <SettingsPage
+            onClose={() => setActivePanel(null)}
+            fontSize={fontSize}
+            setFontSize={setFontSize}
+            portalView={portalView}
+            setPortalView={setPortalView}
+          />
+        )}
+        {activePanel === 'notifications' && <NotificationsPage onClose={() => setActivePanel(null)} />}
+      </AnimatePresence>
     </div>
   );
 };

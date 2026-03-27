@@ -12,7 +12,9 @@ import {
   ChevronDown,
   Calendar,
   BarChart3,
-  Search
+  Search,
+  Lock,
+  LockOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -38,6 +40,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const [fontSize, setFontSize] = useState('medium');
   const [portalView, setPortalView] = useState('default');
   const [activeTopTab, setActiveTopTab] = useState<'dashboard' | 'calendar' | 'analytics'>('dashboard');
+  const [isHovered, setIsHovered] = useState(false);
+  const sessionLockKey = 'portal-left-sidebar-locked';
+  const [isLocked, setIsLocked] = useState(() => sessionStorage.getItem(sessionLockKey) === 'true');
+  const isExpanded = isHovered || isLocked;
 
   const openPanel = (panel: PanelType) => setActivePanel(prev => prev === panel ? null : panel);
   const closePanel = () => setActivePanel(null);
@@ -53,13 +59,51 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   const fontSizeClass = fontSize === 'small' ? 'text-xs' : fontSize === 'large' ? 'text-base' : 'text-sm';
 
+  const toggleLock = () => {
+    setIsLocked(prev => {
+      const next = !prev;
+      sessionStorage.setItem(sessionLockKey, String(next));
+      return next;
+    });
+  };
+
   return (
     <div className={`flex min-h-screen relative ${fontSizeClass}`}>
       <VideoBackground />
 
       {/* Side Panel — purple gradient pill */}
-      <aside className="fixed left-4 top-4 bottom-4 w-20 rounded-[2.5rem] flex flex-col items-center py-6 z-40 shadow-2xl overflow-hidden group/sidebar glass-sidebar">
-        <div className="flex flex-col items-center gap-4 w-full px-2 flex-1 justify-start pt-2">
+      <aside
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`fixed left-4 top-4 bottom-4 rounded-[2.5rem] flex flex-col py-6 z-40 shadow-2xl overflow-hidden group/sidebar glass-sidebar transition-[width,padding] duration-300 ${
+          isExpanded ? 'w-72 px-3 items-start' : 'w-20 px-2 items-center'
+        }`}
+      >
+        <div className={`flex flex-col gap-4 w-full flex-1 justify-start pt-2 ${isExpanded ? 'items-start' : 'items-center'}`}>
+          <div className={`w-full flex ${isExpanded ? 'justify-start' : 'justify-center'}`}>
+            {isExpanded ? (
+              <img
+                src="https://globalengine-india.com/wp-content/uploads/2023/06/White-GEM-India-Logo.png"
+                alt="GEM India Logo"
+                className="w-45 h-20 object-contain mx-auto rounded-xl"
+              />
+            ) : (
+              <div>
+                <img src="public/logo.png" alt="GEM India Logo" className="w-20 h-20 object-contain mx-auto rounded-xl" />
+              </div>
+            )}
+          </div>
+
+          <div className={`w-full flex ${isExpanded ? 'justify-start' : 'justify-center'}`}>
+            <button
+              onClick={toggleLock}
+              aria-label={isLocked ? 'Unlock Sidebar' : 'Lock Sidebar'}
+              className="h-10 w-10 rounded-xl flex items-center justify-center transition-colors text-sidebar-foreground/90 hover:text-sidebar-foreground hover:bg-sidebar-border mx-auto"
+            >
+              {isLocked ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            </button>
+          </div>
+
           {navItems.map((item) => {
             const isActive = item.path
               ? location.pathname === item.path
@@ -67,48 +111,61 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               ? activePanel === item.panel
               : false;
             return (
-              <div key={item.label} className="relative group">
+              <div key={item.label} className="relative group w-full">
                 <button
                   onClick={() => {
                     if (item.action) item.action();
                     else if (item.path) { closePanel(); navigate(item.path); }
                     else if (item.panel) openPanel(item.panel);
                   }}
-                  className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  className={`relative flex items-center transition-all duration-300 ${
+                    isExpanded ? 'w-full h-12 rounded-2xl justify-start px-4 gap-3' : 'w-12 h-12 rounded-full justify-center'
+                  } ${
                     isActive
-                      ? 'bg-white text-primary shadow-lg shadow-white/20'
-                      : 'text-white/90 hover:bg-white/20 hover:text-white'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-lg shadow-primary/10'
+                      : 'text-sidebar-foreground hover:bg-sidebar-border'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
+                  {isExpanded && <span className="text-sm font-medium">{item.label}</span>}
                 </button>
-                {/* Hover tooltip */}
-                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
-                  {item.label}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
-                </div>
+                {!isExpanded && (
+                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+                    {item.label}
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
         {/* Logout at bottom */}
-        <div className="px-2 pb-2 relative group">
+        <div className={`pb-2 relative group w-full ${isExpanded ? 'px-1' : 'px-2'}`}>
           <button
             onClick={handleLogout}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:bg-destructive/20 hover:text-destructive transition-all duration-300"
+            className={`transition-all duration-300 flex items-center ${
+              isExpanded ? 'w-full h-12 rounded-2xl justify-start px-4 gap-3' : 'w-12 h-12 rounded-full justify-center'
+            } text-sidebar-foreground hover:bg-destructive hover:text-destructive`}
           >
             <LogOut className="w-5 h-5" />
+            {isExpanded && <span className="text-sm font-medium">Log Out</span>}
           </button>
-          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
-            Log Out
-            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
-          </div>
+          {!isExpanded && (
+            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50">
+              Log Out
+              <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-foreground" />
+            </div>
+          )}
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 ml-28 p-8 min-h-screen relative z-10">
+      <main
+        className={`flex-1 p-8 min-h-screen relative z-10 transition-[margin-left] duration-300 ${
+          isExpanded ? 'ml-80' : 'ml-28'
+        }`}
+      >
         <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-8">
           {/* Top Navigation Bar */}
           <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">

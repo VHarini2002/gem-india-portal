@@ -47,6 +47,7 @@ export interface Part {
   saleStatus?: string;
   scrapReason?: string;
   dateScrapped?: string;
+  image?: string;
 }
 
 export interface Shipment {

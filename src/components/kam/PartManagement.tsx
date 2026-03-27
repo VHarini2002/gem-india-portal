@@ -1,30 +1,104 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Plus, Package, Search, X, ShoppingCart, Image as ImageIcon } from 'lucide-react';
-import { mockParts, mockEngines } from '@/data/mockData';
+import { mockParts, mockEngines, type Part } from '@/data/mockData';
 import { toast } from 'sonner';
+
+const partDescriptions: Record<string, string> = {
+  'PN-73': 'High Pressure Turbine Blade',
+  'PN-56': 'Combustion Chamber Liner',
+  'PN-81': 'Fan Blade Assembly',
+  'PN-42': 'Compressor Stator Vane',
+  'PN-95': 'Bearing Housing Assembly',
+  'PN-67': 'Fuel Nozzle Module',
+  'PN-38': 'Turbine Disc Segment',
+  'PN-14': 'Accessory Gearbox Cover',
+};
+
+const getDescription = (partNumber: string) => {
+  const prefix = partNumber.substring(0, 5);
+  return partDescriptions[prefix] || '';
+};
+
+const hashString = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+  return h | 0;
+};
 
 const PartManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [search, setSearch] = useState('');
-  const [addForm, setAddForm] = useState({ partNumber: '', description: '', esn: '', price: '', condition: 'Serviceable', image: '' });
+  const [addForm, setAddForm] = useState({
+    partNumber: '',
+    description: '',
+    condition: 'Serviceable',
+    price: '',
+    imageUrl: '',
+  });
 
-  const sellParts = mockParts.filter(p => p.category === 'Sell' && p.saleStatus === 'Available');
+  const [parts, setParts] = useState<Part[]>(() => mockParts);
 
-  const filtered = sellParts.filter(p => {
+  const sellParts = useMemo(
+    () => parts.filter(p => p.category === 'Sell' && p.saleStatus === 'Available'),
+    [parts]
+  );
+
+  useEffect(() => {
+    if (!addForm.partNumber) {
+      setAddForm(prev => ({ ...prev, description: '' }));
+      return;
+    }
+    const nextDescription = getDescription(addForm.partNumber);
+    setAddForm(prev => ({ ...prev, description: nextDescription }));
+  }, [addForm.partNumber]);
+
+  const filtered = useMemo(() => sellParts.filter(p => {
     if (!search) return true;
     const q = search.toLowerCase();
     const eng = mockEngines.find(e => e.id === p.engineId);
-    return p.partNumber.toLowerCase().includes(q) || eng?.esn.toLowerCase().includes(q) || p.condition.toLowerCase().includes(q);
-  });
+    return (
+      p.partNumber.toLowerCase().includes(q) ||
+      eng?.esn.toLowerCase().includes(q) ||
+      p.condition.toLowerCase().includes(q)
+    );
+  }), [search, sellParts]);
 
   const handleAddPart = () => {
-    if (!addForm.partNumber || !addForm.esn || !addForm.price) {
-      toast.error('Please fill Part Number, ESN, and Price');
+    if (!addForm.partNumber || !addForm.price) {
+      toast.error('Please enter Part Number and Part Cost');
       return;
     }
+
+    const priceNum = Number(addForm.price);
+    if (!Number.isFinite(priceNum) || priceNum <= 0) {
+      toast.error('Please enter a valid numeric Price');
+      return;
+    }
+
+    const engineIdx = Math.abs(hashString(addForm.partNumber)) % mockEngines.length;
+    const engine = mockEngines[engineIdx] || mockEngines[0];
+
+    const newPart: Part = {
+      id: String(Date.now()),
+      engineId: engine.id,
+      partNumber: addForm.partNumber,
+      // serialNumber is not collected in the UI; generate a stable-looking placeholder
+      serialNumber: `SN-${Math.floor(Math.random() * 900000) + 100000}`,
+      category: 'Sell',
+      condition: addForm.condition,
+      currentLocation: engine.currentLocation,
+      price: priceNum,
+      certification: 'EASA',
+      stockLocation: engine.currentLocation,
+      saleStatus: 'Available',
+      image: addForm.imageUrl || undefined,
+    };
+
+    setParts(prev => [newPart, ...prev]);
     toast.success(`Part ${addForm.partNumber} added to catalog`);
-    setAddForm({ partNumber: '', description: '', esn: '', price: '', condition: 'Serviceable', image: '' });
+    setAddForm({ partNumber: '', description: '', price: '', condition: 'Serviceable', imageUrl: '' });
     setShowAddForm(false);
   };
 
@@ -62,9 +136,12 @@ const PartManagement = () => {
             return (
               <motion.div key={part.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                 className="glass-card-glow p-4 rounded-2xl space-y-3">
-                {/* Image placeholder */}
-                <div className="w-full h-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+                <div className="w-full h-32 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
+                  {part.image ? (
+                    <img src={part.image} alt={part.partNumber} className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+                  )}
                 </div>
                 <div>
                   <p className="font-heading text-sm font-bold text-primary">{part.partNumber}</p>
@@ -93,41 +170,108 @@ const PartManagement = () => {
 
       {/* Add Part Dialog */}
       <AnimatePresence>
-        {showAddForm && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddForm(false)} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-lg rounded-2xl p-6 border border-white/10 glass-card-glow">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-heading text-base font-bold text-foreground">Add New Part</h3>
-                <button onClick={() => setShowAddForm(false)} className="p-1.5 rounded-lg hover:bg-white/10"><X className="w-4 h-4 text-muted-foreground" /></button>
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div><label className={labelCls}>Part Number *</label><input className={inputCls} placeholder="PN-XXXXXX" value={addForm.partNumber} onChange={e => setAddForm(p => ({ ...p, partNumber: e.target.value }))} /></div>
-                  <div><label className={labelCls}>ESN *</label><input className={inputCls} placeholder="ESN-XXXXXX" value={addForm.esn} onChange={e => setAddForm(p => ({ ...p, esn: e.target.value }))} /></div>
-                  <div><label className={labelCls}>Price (USD) *</label><input className={inputCls} type="number" placeholder="50000" value={addForm.price} onChange={e => setAddForm(p => ({ ...p, price: e.target.value }))} /></div>
-                  <div><label className={labelCls}>Condition</label>
-                    <select className={inputCls} value={addForm.condition} onChange={e => setAddForm(p => ({ ...p, condition: e.target.value }))}>
-                      {['Serviceable', 'As-Removed', 'Overhauled', 'New', 'Inspected'].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
+        {showAddForm && createPortal(
+            <motion.div
+              className="fixed inset-0 z-[20000] flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="absolute inset-0 bg-black" onClick={() => setShowAddForm(false)} />
+
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative z-[20001] w-full max-w-lg rounded-2xl p-6 border border-white/10 glass-card-glow"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="font-heading text-base font-bold text-foreground">Add New Part</h3>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className="p-1.5 rounded-lg hover:bg-white/10"
+                    aria-label="Close add part dialog"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
                 </div>
-                <div><label className={labelCls}>Description</label><textarea className={inputCls + ' resize-none'} rows={2} placeholder="Part description..." value={addForm.description} onChange={e => setAddForm(p => ({ ...p, description: e.target.value }))} /></div>
-                <div>
-                  <label className={labelCls}>Image (optional)</label>
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-white/20 hover:border-primary/50 cursor-pointer transition-all">
-                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Click to upload image</span>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelCls}>Part Number *</label>
+                      <input
+                        className={inputCls}
+                        placeholder="PN-XXXXXX"
+                        value={addForm.partNumber}
+                        onChange={e => setAddForm(p => ({ ...p, partNumber: e.target.value }))}
+                        autoFocus
+                      />
+                    </div>
+
+                    <div>
+                      <label className={labelCls}>Part Cost (USD) *</label>
+                      <input
+                        className={inputCls}
+                        type="number"
+                        placeholder="50000"
+                        value={addForm.price}
+                        onChange={e => setAddForm(p => ({ ...p, price: e.target.value }))}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={labelCls}>Condition</label>
+                      <select
+                        className={inputCls}
+                        value={addForm.condition}
+                        onChange={e => setAddForm(p => ({ ...p, condition: e.target.value }))}
+                      >
+                        {['Serviceable', 'As-Removed', 'Overhauled', 'New', 'Inspected'].map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className={labelCls}>Part Image (optional)</label>
+                      <input
+                        className={inputCls}
+                        type="file"
+                        accept="image/*"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const url = URL.createObjectURL(file);
+                          setAddForm(p => ({ ...p, imageUrl: url }));
+                        }}
+                      />
+                    </div>
                   </div>
+
+                  <div>
+                    <label className={labelCls}>Part Description (auto)</label>
+                    <textarea
+                      className={inputCls + ' resize-none'}
+                      rows={2}
+                      placeholder="Description will auto-fill from Part Number"
+                      value={addForm.description}
+                      readOnly
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleAddPart}
+                    className="w-full py-3 rounded-xl bg-primary text-white font-medium text-sm hover:bg-primary/80 transition-all shadow-lg shadow-primary/20"
+                  >
+                    Add Part
+                  </button>
                 </div>
-                <button onClick={handleAddPart} className="w-full py-3 rounded-xl bg-primary text-white font-medium text-sm hover:bg-primary/80 transition-all shadow-lg shadow-primary/20">
-                  Add Part to Catalog
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
+              </motion.div>
+            </motion.div>,
+            document.body
+          )
+        }
       </AnimatePresence>
     </div>
   );
