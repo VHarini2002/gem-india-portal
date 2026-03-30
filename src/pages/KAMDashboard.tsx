@@ -21,13 +21,34 @@ import { Plane, Wrench, Warehouse, DollarSign, FileQuestion, TrendingUp, Shoppin
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { createPortal } from 'react-dom';
 
+const getModuleAndTabFromPath = (
+  pathname: string,
+): { activeModule: KAMModule; dashboardTab: 'dashboard' | 'calendar' | 'analytics' } => {
+  const afterDashboard = pathname.startsWith('/dashboard') ? pathname.slice('/dashboard'.length) : '';
+  const seg = afterDashboard.split('/').filter(Boolean)[0];
+
+  if (!seg || seg === 'dashboard') return { activeModule: 'dashboard', dashboardTab: 'dashboard' };
+  if (seg === 'calendar' || seg === 'analytics') return { activeModule: 'dashboard', dashboardTab: seg };
+
+  if (seg === 'engine-management' || seg === 'client-management') {
+    return { activeModule: seg as KAMModule, dashboardTab: 'dashboard' };
+  }
+
+  if (seg === 'folder-management' || seg === 'part-management') {
+    return { activeModule: seg as KAMModule, dashboardTab: 'dashboard' };
+  }
+
+  return { activeModule: 'dashboard', dashboardTab: 'dashboard' };
+};
+
 const KAMDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { isDarkTheme, setIsDarkTheme } = useTheme();
-  const [activeModule, setActiveModule] = useState<KAMModule>('dashboard');
-  const [dashboardTab, setDashboardTab] = useState<'dashboard' | 'calendar' | 'analytics'>('dashboard');
+  const { activeModule: initialActiveModule, dashboardTab: initialDashboardTab } = getModuleAndTabFromPath(location.pathname);
+  const [activeModule, setActiveModule] = useState<KAMModule>(initialActiveModule);
+  const [dashboardTab, setDashboardTab] = useState<'dashboard' | 'calendar' | 'analytics'>(initialDashboardTab);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'settings' | 'notifications' | null>(null);
   const [sidebarExpanded, setSidebarExpanded] = useState(() => sessionStorage.getItem('kam-sidebar-locked') === 'true');
@@ -424,89 +445,84 @@ const KAMDashboard = () => {
       </main>
 
       <PartsCatalog open={catalogOpen} onClose={() => setCatalogOpen(false)} />
+      {/* Engine Management as dialog */}
+      {activeModule === 'engine-management' &&
+        createPortal(
+          <motion.div
+            key="engine-management-dialog"
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-transparent p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={closeEngineClientDialog}
+          >
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 22 }}
+                className="relative w-full max-w-5xl max-h-[calc(100vh-2rem)] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
+                  <h3 className="font-heading text-base font-bold text-foreground">Engine Management</h3>
+                </div>
+                <button
+                  onClick={closeEngineClientDialog}
+                  className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                  aria-label="Close engine management dialog"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+                <div className="overflow-auto p-5 max-h-[calc(100vh-180px)]">
+                <EngineManagement />
+              </div>
+            </motion.div>
+          </motion.div>,
+          document.body
+        )}
+
+      {/* Client Management as dialog */}
+      {activeModule === 'client-management' &&
+        createPortal(
+          <motion.div
+            key="client-management-dialog"
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-transparent p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={closeEngineClientDialog}
+          >
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 22 }}
+              className="relative w-full max-w-5xl max-h-[calc(100vh-2rem)] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
+                  <h3 className="font-heading text-base font-bold text-foreground">Client Management</h3>
+                </div>
+                <button
+                  onClick={closeEngineClientDialog}
+                  className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                  aria-label="Close client management dialog"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="overflow-auto p-5 max-h-[calc(100vh-180px)]">
+                <ClientManagement />
+              </div>
+            </motion.div>
+          </motion.div>,
+          document.body
+        )}
+
+      {/* Overlay Panels */}
       <AnimatePresence>
-        {/* Engine Management as dialog */}
-        {activeModule === 'engine-management' && (
-          createPortal(
-            <motion.div
-              key="engine-management-dialog"
-              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeEngineClientDialog}
-            >
-              <motion.div
-                initial={{ scale: 0.98, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.98, opacity: 0 }}
-                transition={{ type: 'spring', damping: 22 }}
-                className="relative w-full max-w-5xl h-[82vh] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between p-5 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
-                    <h3 className="font-heading text-base font-bold text-foreground">Engine Management</h3>
-                  </div>
-                  <button
-                    onClick={closeEngineClientDialog}
-                    className="p-2 rounded-xl hover:bg-white/10 transition-colors"
-                    aria-label="Close engine management dialog"
-                  >
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-                <div className="h-[calc(82vh-64px)] overflow-auto p-5">
-                  <EngineManagement />
-                </div>
-              </motion.div>
-            </motion.div>,
-            document.body
-          )
-        )}
-
-        {/* Client Management as dialog */}
-        {activeModule === 'client-management' && (
-          createPortal(
-            <motion.div
-              key="client-management-dialog"
-              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeEngineClientDialog}
-            >
-              <motion.div
-                initial={{ scale: 0.98, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.98, opacity: 0 }}
-                transition={{ type: 'spring', damping: 22 }}
-                className="relative w-full max-w-5xl h-[82vh] rounded-2xl border border-white/10 glass-card-glow overflow-hidden z-[10001]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between p-5 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"> </span>
-                    <h3 className="font-heading text-base font-bold text-foreground">Client Management</h3>
-                  </div>
-                  <button
-                    onClick={closeEngineClientDialog}
-                    className="p-2 rounded-xl hover:bg-white/10 transition-colors"
-                    aria-label="Close client management dialog"
-                  >
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-                <div className="h-[calc(82vh-64px)] overflow-auto p-5">
-                  <ClientManagement />
-                </div>
-              </motion.div>
-            </motion.div>,
-            document.body
-          )
-        )}
-
         {activePanel === 'settings' && (
           <SettingsPage
             onClose={() => setActivePanel(null)}

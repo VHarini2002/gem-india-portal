@@ -70,7 +70,7 @@ const ClientManagement = () => {
   const labelCls = "text-xs font-medium text-muted-foreground block mb-1.5";
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col min-h-0">
       <div className="flex gap-2 mb-6">
         {[
           { key: 'create' as Tab, label: 'Create Client', icon: UserPlus },
@@ -86,10 +86,10 @@ const ClientManagement = () => {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="overflow-y-auto">
         <AnimatePresence mode="wait">
           {tab === 'create' && (
-            <motion.div key="create" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl">
+            <motion.div key="create" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
               <div className="glass-card-glow p-6 rounded-2xl space-y-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2.5 rounded-xl bg-primary/15"><UserPlus className="w-5 h-5 text-primary" /></div>
@@ -172,7 +172,7 @@ const ClientManagement = () => {
           )}
 
           {tab === 'transfer' && (
-            <motion.div key="transfer" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl">
+            <motion.div key="transfer" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
               <div className="glass-card-glow p-6 rounded-2xl space-y-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2.5 rounded-xl bg-warning/15"><ArrowRightLeft className="w-5 h-5 text-warning" /></div>

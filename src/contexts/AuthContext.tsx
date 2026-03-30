@@ -11,8 +11,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
   const storageKey = 'gem-user';
+
+  // Important: initialize from sessionStorage synchronously.
+  // Otherwise `Dashboard` briefly renders with `isAuthenticated=false` and redirects to `/`
+  // on hard/refresh before this effect runs.
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as User;
+      // Validate against mockUsers to avoid stale/invalid sessions.
+      const found = mockUsers.find(u => u.email === parsed.email && u.role === parsed.role);
+      return found ?? null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     try {

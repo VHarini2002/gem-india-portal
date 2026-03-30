@@ -79,7 +79,7 @@ const EngineManagement = () => {
   const labelCls = "text-xs font-medium text-muted-foreground block mb-1.5";
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col min-h-0">
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         {[
@@ -95,10 +95,10 @@ const EngineManagement = () => {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="overflow-y-auto">
         <AnimatePresence mode="wait">
           {tab === 'register' && (
-            <motion.div key="register" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl">
+            <motion.div key="register" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
               <div className="glass-card-glow p-6 rounded-2xl space-y-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2.5 rounded-xl bg-primary/15"><Plane className="w-5 h-5 text-primary" /></div>
@@ -120,7 +120,7 @@ const EngineManagement = () => {
           )}
 
           {tab === 'access' && (
-            <motion.div key="access" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <motion.div key="access" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
               {/* Sub tabs */}
               <div className="flex gap-2 mb-5">
                 <button onClick={() => setAccessTab('grant')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${accessTab === 'grant' ? 'bg-success/20 text-success' : 'text-muted-foreground hover:text-foreground'}`}>
