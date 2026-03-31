@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 226 20% 14%;
 
-    /* #f09c0a */
-    --primary: 38 92% 49%;
+    /* Orange (logo-driven) */
+    --primary: 46 91% 55%;
     --primary-foreground: 226 20% 14%;
 
     --secondary: 220 14% 96%;
@@ -25,14 +25,14 @@
     --muted: 210 16% 94%;
     --muted-foreground: 226 12% 35%;
 
-    --accent: 38 92% 49%;
+    --accent: 34 76% 50%;
     --accent-foreground: 226 20% 14%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --input: 220 14% 86%;
-    --ring: 38 92% 49%;
+    --ring: 46 91% 55%;
 
     --radius: 1rem;
 
@@ -41,10 +41,10 @@
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 226 25% 23%;
-    --sidebar-accent: 38 92% 49%;
+    --sidebar-accent: 46 91% 55%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 226 25% 35%;
-    --sidebar-ring: 38 92% 49%;
+    --sidebar-ring: 46 91% 55%;
 
     --glass-bg: 0 0% 100%;
     --glass-border: 220 14% 86%;
@@ -52,60 +52,61 @@
     --surface-subtle: 210 16% 96%;
     --surface-elevated: 210 16% 98%;
 
-    /* Replace green with orange */
-    --success: 38 92% 49%;
-    --warning: 38 92% 50%;
+    /* Orange status colors */
+    --success: 38 82% 50%;
+    --warning: 40 96% 54%;
   }
 
   .dark {
     /* Dark mode */
-    --background: 226 25% 12%;
-    --foreground: 0 0% 92%;
+    /* Grey (replace navy) */
+    --background: 0 0% 23%;
+    --foreground: 0 0% 97%;
 
-    --card: 226 25% 15%;
-    --card-foreground: 0 0% 92%;
+    --card: 240 2% 27%;
+    --card-foreground: 0 0% 97%;
 
-    --popover: 226 25% 15%;
-    --popover-foreground: 0 0% 92%;
+    --popover: 240 2% 27%;
+    --popover-foreground: 0 0% 97%;
 
-    --primary: 38 92% 49%;
+    --primary: 46 91% 55%;
     --primary-foreground: 226 25% 12%;
 
-    --secondary: 226 20% 18%;
-    --secondary-foreground: 0 0% 92%;
+    --secondary: 240 2% 27%;
+    --secondary-foreground: 0 0% 97%;
 
-    --muted: 226 20% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 48%;
+    --muted-foreground: 0 0% 85%;
 
-    --accent: 38 92% 49%;
+    --accent: 34 76% 50%;
     --accent-foreground: 226 25% 12%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 226 20% 28%;
-    --input: 226 20% 28%;
-    --ring: 38 92% 49%;
+    --border: 0 0% 48%;
+    --input: 0 0% 48%;
+    --ring: 46 91% 55%;
 
     /* Sidebar fixed grey */
-    --sidebar-background: hsl(225, 53%, 12%);
+    --sidebar-background: 0 0% 23%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 226 25% 23%;
-    --sidebar-accent: 38 92% 49%;
+    --sidebar-accent: 46 91% 55%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 226 25% 35%;
-    --sidebar-ring: 38 92% 49%;
+    --sidebar-border: 240 2% 27%;
+    --sidebar-ring: 46 91% 55%;
 
-    --glass-bg: 226 25% 15%;
-    --glass-border: 226 20% 28%;
+    --glass-bg: 240 2% 27%;
+    --glass-border: 0 0% 48%;
 
-    --surface-subtle: 226 20% 14%;
-    --surface-elevated: 226 20% 16%;
+    --surface-subtle: 0 0% 23%;
+    --surface-elevated: 240 2% 27%;
 
-    /* Replace green with orange */
-    --success: 38 92% 49%;
-    --warning: 38 92% 50%;
+    /* Orange status colors */
+    --success: 38 82% 50%;
+    --warning: 40 96% 54%;
   }
 }
 
@@ -129,6 +130,17 @@
   }
 }
 
+/* Portal density modes (default / compact / expanded) */
+.portal-view-compact .glass-card,
+.portal-view-compact .glass-card-glow {
+  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.28);
+}
+
+.portal-view-expanded .glass-card,
+.portal-view-expanded .glass-card-glow {
+  box-shadow: 0 10px 36px hsl(0 0% 0% / 0.38);
+}
+
 /* Fixed video background */
 .video-bg {
   position: fixed;
@@ -150,18 +162,26 @@
   inset: 0;
   background: linear-gradient(
     135deg,
-    hsl(222, 12%, 79%)0%,
-    hsl(43, 23%, 94%) 30%,
-    hsl(206, 6%, 75%) 100%
+    #eba41b 0%,
+    #f1be20 30%,
+    #ee991a 50%,
+    #4c4839 40%,
+    #919191 50%,
+    #353535 30%,
+    #242424 0%
   );
 }
 
 .dark .video-bg::after {
   background: linear-gradient(
     135deg,
-    hsl(226 25% 12%) 0%,
-    hsl(227, 54%, 14%) 30%,
-    hsl(226 25% 12%) 100%
+    #eba41b 0%,
+    #f1be20 30%,
+    #ee991a 30%,
+    #4c4839 30%,
+    #919191 30%,
+    #353535 30%,
+    #242424 0%
   );
 }
 
@@ -217,13 +237,13 @@
   }
 
   .glass-sidebar {
-    background: #2c334a;
+    background: #3a3a3a;
     border: 1px solid hsl(var(--sidebar-border));
     box-shadow: 4px 0 32px hsl(0 0% 0% / 0.45);
   }
 
   .dark .glass-sidebar {
-    background: #2c334a;
+    background: #3a3a3a;
     border: 1px solid hsl(var(--sidebar-border));
     box-shadow: 4px 0 32px hsl(0 0% 0% / 0.45);
   }
@@ -233,6 +253,13 @@
     border-bottom: 1px solid hsl(var(--border));
     box-shadow: 0 2px 20px hsl(0 0% 0% / 0.35);
   }
+
+  /* Tighter, more industrial corner radius tuning */
+  .rounded-2xl {
+    border-radius: 1rem; /* was visually very pill-shaped before */
+  }
+
+  /* (Removed invalid overrides for Tailwind bracket radii) */
 
   .dark .glass-header {
     background: hsl(var(--background));
@@ -297,7 +324,7 @@
   }
 
   .progress-glow {
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(252 70% 68%));
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(300, 1%, 19%));
     box-shadow: 0 0 8px hsl(var(--primary) / 0.35);
   }
 
@@ -326,6 +353,15 @@
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 2px 8px hsl(var(--primary) / 0.15); }
   50% { box-shadow: 0 4px 20px hsl(var(--primary) / 0.3); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2.2s linear infinite;
 }
 
 /* stylelint-enable at-rule-no-unknown */

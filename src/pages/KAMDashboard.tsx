@@ -227,9 +227,9 @@ const KAMDashboard = () => {
           sidebarExpanded ? 'ml-80' : 'ml-28'
         }`}
       >
-        <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-6">
+        <div className="max-w-[1800px] mx-auto h-full flex flex-col gap-6">
           {/* Header */}
-          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
+          <header className="flex items-center justify-between backdrop-blur-xl rounded-2xl px-8 py-4 shadow-sm glass-header border border-border/40">
             <div className="flex items-center gap-6">
               {showDashboardUI && (
                 <nav className="flex items-center gap-4">
@@ -289,7 +289,7 @@ const KAMDashboard = () => {
           </header>
 
           {/* Content */}
-          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
+          <div className="flex-1 backdrop-blur-xl rounded-2xl p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
             {/* Nested breadcrumb for URLs like /dashboard/calendar */}
             <nav className="text-xs text-muted-foreground flex items-center gap-2 mb-6">
               <button

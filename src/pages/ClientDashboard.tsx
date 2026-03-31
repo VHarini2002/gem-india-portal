@@ -1,16 +1,19 @@
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockEngines } from '@/data/mockData';
+import { mockEngines, mockParts } from '@/data/mockData';
 import EngineCard from '@/components/EngineCard';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, AlertTriangle, AlertCircle, Info, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { buildAttentionItems } from '@/lib/engineIntelligence';
+import { useNavigate } from 'react-router-dom';
 
 const statusOptions = ['All', 'In Transit', 'In Repair', 'In Storage', 'Disassembly', 'Inspection', 'Completed', 'Preservation Active', 'Ready for Release'];
 const serviceOptions = ['All', 'Teardown & Return', 'Teardown, Repair & Sell', 'Lease Storage'];
 
 const ClientDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -30,12 +33,13 @@ const ClientDashboard = () => {
   });
 
   const activeFilters = (statusFilter !== 'All' ? 1 : 0) + (serviceFilter !== 'All' ? 1 : 0);
+  const attention = buildAttentionItems({ engines: clientEngines, parts: mockParts, limit: 6 });
 
   return (
     <AppLayout>
       <div className="min-h-full">
         <div className="pt-1">
-          <div className="max-w-8xl mx-auto px-6 pt-8">
+            <div className="max-w-[1800px] mx-auto px-6 pt-8">
             {/* Hero Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -71,6 +75,85 @@ const ClientDashboard = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+
+            {/* Needs Attention */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="glass-card-glow rounded-2xl overflow-hidden mb-8"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div>
+                    <h3 className="font-heading text-sm font-bold text-foreground">What needs attention</h3>
+                    <p className="font-body text-xs text-muted-foreground mt-1">
+                      Prioritized items that impact schedule, risk, and recovery value.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowFilters(true)}
+                    className="btn-secondary py-2 px-4 text-xs rounded-xl flex items-center gap-2"
+                  >
+                    Review filters <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {attention.length === 0 ? (
+                  <div className="rounded-xl border border-border/50 bg-muted/20 p-5">
+                    <p className="text-sm font-heading font-semibold text-foreground">All clear</p>
+                    <p className="text-xs font-body text-muted-foreground mt-1">No urgent items detected for your engines.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {attention.map((item) => {
+                      const icon =
+                        item.severity === 'critical' ? AlertTriangle : item.severity === 'warning' ? AlertCircle : Info;
+                      const badge =
+                        item.severity === 'critical'
+                          ? 'bg-destructive/15 text-destructive border border-destructive/25'
+                          : item.severity === 'warning'
+                          ? 'bg-warning/15 text-warning border border-warning/25'
+                          : 'bg-primary/10 text-primary border border-primary/20';
+
+                      const Icon = icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => item.ctaHref ? navigate(item.ctaHref) : undefined}
+                          className="w-full text-left rounded-2xl border border-border/50 bg-muted/10 hover:bg-muted/20 transition-colors p-4 group"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${badge}`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-heading font-semibold text-foreground">{item.title}</p>
+                                {item.engineLabel && (
+                                  <span className="text-[10px] font-body text-muted-foreground/70 truncate">
+                                    {item.engineLabel}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs font-body text-muted-foreground mt-1 leading-relaxed">
+                                {item.description}
+                              </p>
+                              <div className="mt-3 flex items-center gap-2">
+                                <span className="text-xs font-heading font-semibold text-primary">
+                                  {item.ctaLabel}
+                                </span>
+                                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </motion.div>
 

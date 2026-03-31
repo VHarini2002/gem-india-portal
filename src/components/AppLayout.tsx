@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -24,6 +24,7 @@ import SettingsPage from '@/pages/SettingsPage';
 import FilesPage from '@/pages/FilesPage';
 import InlineCalendar from '@/components/InlineCalendar';
 import InlineAnalytics from '@/components/InlineAnalytics';
+import { patchUserPreferences, readUserPreferences } from '@/lib/userPreferences';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -57,7 +58,50 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     { icon: Settings, panel: 'settings', label: 'Settings' },
   ];
 
-  const fontSizeClass = fontSize === 'small' ? 'text-xs' : fontSize === 'large' ? 'text-base' : 'text-sm';
+  // Global font sizing for the entire portal, driven by Settings.
+  // All sizes are slightly larger than default for better readability.
+  const fontSizeClass =
+    fontSize === 'small'
+      ? 'text-sm'   // previously xs
+      : fontSize === 'large'
+      ? 'text-lg'   // previously base
+      : 'text-base'; // medium (default) is now bigger than before
+
+  const portalViewClass =
+    portalView === 'compact'
+      ? 'portal-view-compact'
+      : portalView === 'expanded'
+      ? 'portal-view-expanded'
+      : 'portal-view-default';
+
+  const userKey = user?.email ?? null;
+
+  // Load preferences per-user when session changes.
+  useEffect(() => {
+    if (!userKey) return;
+    const prefs = readUserPreferences(userKey);
+    setFontSize(prefs.fontSize);
+    setPortalView(prefs.portalView);
+    setIsDarkTheme(prefs.isDarkTheme);
+  }, [userKey]);
+
+  const setFontSizePref = (s: string) => {
+    setFontSize(s);
+    if (!userKey) return;
+    patchUserPreferences(userKey, { fontSize: s as any });
+  };
+
+  const setPortalViewPref = (s: string) => {
+    setPortalView(s);
+    if (!userKey) return;
+    patchUserPreferences(userKey, { portalView: s as any });
+  };
+
+  const setThemePref = (dark: boolean) => {
+    setIsDarkTheme(dark);
+    if (!userKey) return;
+    patchUserPreferences(userKey, { isDarkTheme: dark });
+  };
 
   const toggleLock = () => {
     setIsLocked(prev => {
@@ -67,15 +111,19 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     });
   };
 
+  // Avoid `new URL()` because BASE_URL can be '' in some dev setups.
+  const base = import.meta.env.BASE_URL ?? "/";
+  const logoSrc = `${base.endsWith("/") ? base : `${base}/`}logo.png`;
+
   return (
-    <div className={`flex min-h-screen relative ${fontSizeClass}`}>
+    <div className={`flex min-h-screen relative ${fontSizeClass} ${portalViewClass}`}>
       <VideoBackground />
 
       {/* Side Panel — purple gradient pill */}
       <aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`fixed left-4 top-4 bottom-4 rounded-[2.5rem] flex flex-col py-6 z-40 shadow-2xl overflow-hidden group/sidebar glass-sidebar transition-[width,padding] duration-300 ${
+        className={`fixed left-4 top-4 bottom-4 rounded-2xl flex flex-col py-6 z-40 shadow-2xl overflow-hidden group/sidebar glass-sidebar transition-[width,padding] duration-300 ${
           isExpanded ? 'w-72 px-3 items-start' : 'w-20 px-2 items-center'
         }`}
       >
@@ -89,7 +137,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               />
             ) : (
               <div>
-                <img src="public/logo.png" alt="GEM India Logo" className="w-20 h-20 object-contain mx-auto rounded-xl" />
+                <img src={logoSrc} alt="GEM India Logo" className="w-20 h-20 object-contain mx-auto rounded-xl" />
               </div>
             )}
           </div>
@@ -162,13 +210,17 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* Main content */}
       <main
-        className={`flex-1 p-8 min-h-screen relative z-10 transition-[margin-left] duration-300 ${
+        className={`flex-1 min-h-screen relative z-10 transition-[margin-left] duration-300 ${
           isExpanded ? 'ml-80' : 'ml-28'
         }`}
       >
-        <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-8">
+        <div
+          className={`max-w-[1800px] mx-auto h-full flex flex-col ${
+            portalView === 'compact' ? 'gap-6' : portalView === 'expanded' ? 'gap-10' : 'gap-8'
+          } ${portalView === 'compact' ? 'px-4 py-6' : portalView === 'expanded' ? 'px-10 py-10' : 'px-8 py-8'}`}
+        >
           {/* Top Navigation Bar */}
-          <header className="flex items-center justify-between backdrop-blur-xl rounded-[2.5rem] px-8 py-4 shadow-sm glass-header border border-border/40">
+            <header className="flex items-center justify-between backdrop-blur-xl rounded-2xl px-8 py-4 shadow-sm glass-header border border-border/40">
             <div className="flex items-center gap-8">
               <nav className="flex items-center gap-6">
                 <button
@@ -233,7 +285,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 backdrop-blur-xl rounded-[3rem] p-8 border border-border/40 shadow-sm overflow-auto glass-card-glow">
+          <div
+            className={`flex-1 backdrop-blur-xl rounded-2xl border border-border/40 shadow-sm overflow-auto glass-card-glow ${
+              portalView === 'compact' ? 'p-6' : portalView === 'expanded' ? 'p-10' : 'p-8'
+            }`}
+          >
             {activeTopTab === 'dashboard' && children}
             {activeTopTab === 'calendar' && <InlineCalendar />}
             {activeTopTab === 'analytics' && <InlineAnalytics />}
@@ -247,9 +303,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           <SettingsPage
             onClose={closePanel}
             fontSize={fontSize}
-            setFontSize={setFontSize}
+            setFontSize={setFontSizePref}
             portalView={portalView}
-            setPortalView={setPortalView}
+            setPortalView={setPortalViewPref}
+            setTheme={setThemePref}
           />
         )}
         {activePanel === 'files' && <FilesPage onClose={closePanel} />}

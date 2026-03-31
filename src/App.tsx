@@ -5,13 +5,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import EngineDetail from "./pages/EngineDetail";
-import Help from "./pages/Help";
-import NotFound from "./pages/NotFound";
+import { Suspense, lazy } from "react";
+import Loader, { FullScreenLoader } from "@/components/ui/loader";
 import ChatWidget from "./components/ChatWidget";
-import PublicPartsCatalog from "./pages/PublicPartsCatalog";
+
+const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const EngineDetail = lazy(() => import("./pages/EngineDetail"));
+const Help = lazy(() => import("./pages/Help"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PublicPartsCatalog = lazy(() => import("./pages/PublicPartsCatalog"));
 
 const queryClient = new QueryClient();
 
@@ -20,17 +23,20 @@ const App = () => (
     <TooltipProvider>
       <ThemeProvider>
         <AuthProvider>
+          <Loader />
           <Toaster />
           <Sonner />
           <BrowserRouter basename="/gem-india-portal/">
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/dashboard/*" element={<Dashboard />} />
-              <Route path="/engine/:id" element={<EngineDetail />} />
-              <Route path="/help" element={<Help />} />
-              <Route path="/catalog" element={<PublicPartsCatalog />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<FullScreenLoader />}>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/dashboard/*" element={<Dashboard />} />
+                <Route path="/engine/:id" element={<EngineDetail />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/catalog" element={<PublicPartsCatalog />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
             <ChatWidget />
           </BrowserRouter>
         </AuthProvider>

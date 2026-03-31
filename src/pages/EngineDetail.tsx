@@ -9,6 +9,7 @@ import AppLayout from '@/components/AppLayout';
 import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { getEngineHealth, getEngineStory } from '@/lib/engineIntelligence';
 
 const allTabs = [
   { id: 'overview', label: 'Overview', icon: Package },
@@ -41,6 +42,12 @@ const EngineDetail = () => {
   const isLeaseStorage = engine.serviceType === 'Lease Storage';
   const tabs = isLeaseStorage ? allTabs.filter(t => t.id !== 'parts') : allTabs;
   const currentPhaseIndex = phases.indexOf(engine.currentPhase);
+  const health = getEngineHealth(engine);
+  const story = getEngineStory(engine);
+  const todayPct =
+    typeof story.timelineProgress === "number"
+      ? Math.min(100, Math.max(0, story.timelineProgress))
+      : 0;
 
   const filteredParts = partsFilter === 'all' ? parts : parts.filter(p => p.category === partsFilter);
   const scrapCount = parts.filter(p => p.category === 'Scrap').length;
@@ -55,6 +62,120 @@ const EngineDetail = () => {
       case 'overview':
         return (
           <div className="space-y-6">
+            {/* Engine Story */}
+            <div className="glass-card-glow p-6 rounded-2xl">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="font-heading text-sm font-bold text-foreground">Engine Story</h3>
+                  <p className="font-body text-xs text-muted-foreground mt-1">
+                    Entry → Today → Completion (decision-focused timeline)
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
+                      health.score >= 80
+                        ? 'bg-success/15 text-success border border-success/25'
+                        : health.score >= 70
+                        ? 'bg-warning/15 text-warning border border-warning/25'
+                        : 'bg-destructive/15 text-destructive border border-destructive/25'
+                    }`}
+                  >
+                    Health {health.score}/100
+                  </span>
+                  <span className="text-[11px] font-body text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl border border-border/30">
+                    {health.driver}
+                  </span>
+                </div>
+              </div>
+
+              <div className="relative pt-3 pb-4">
+                <div className="absolute left-0 right-0 top-4 h-1.5 rounded-full bg-muted" />
+                <motion.div
+                  className="absolute left-0 top-4 h-1.5 rounded-full progress-glow"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, story.timelineProgress ?? 0))}%`,
+                  }}
+                  initial={{ scaleX: 0.7 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.6 }}
+                />
+
+                {/* Markers */}
+                <div className="absolute top-0 left-0 -translate-x-0.5 text-[10px] font-body text-muted-foreground">
+                  Entry
+                </div>
+                <div
+                  className="absolute top-0 -translate-x-1/2 text-[10px] font-body text-muted-foreground whitespace-nowrap"
+                  style={{ left: `${todayPct}%` }}
+                >
+                  Today
+                </div>
+                <div className="absolute top-0 right-0 translate-x-0.5 text-[10px] font-body text-muted-foreground">
+                  Completion
+                </div>
+
+                {/* You are here pulse */}
+                <motion.div
+                  className={`absolute top-3 -translate-x-1/2 w-4 h-4 rounded-full ${
+                    health.isAtRisk ? 'bg-destructive' : 'bg-primary'
+                  }`}
+                  style={{ left: `${todayPct}%` }}
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
+                  <p className="text-xs font-body text-muted-foreground">Entry</p>
+                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
+                    {engine.inductionDate}
+                  </p>
+                </div>
+                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
+                  <p className="text-xs font-body text-muted-foreground">Today</p>
+                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
+                    {engine.lastUpdated}
+                  </p>
+                </div>
+                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
+                  <p className="text-xs font-body text-muted-foreground">Completion</p>
+                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
+                    {engine.expectedCompletion}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <p className="text-xs font-body text-muted-foreground">
+                  Elapsed vs planned:{' '}
+                  <span className="font-heading text-foreground">
+                    {typeof story.elapsedDays === 'number' ? story.elapsedDays : '-'} /{' '}
+                    {typeof story.plannedDays === 'number' ? story.plannedDays : '-'} days
+                  </span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                  {typeof story.dueInDays === 'number' ? (
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
+                        story.isOverdue ? 'bg-destructive/15 text-destructive border border-destructive/25' : 'bg-warning/15 text-warning border border-warning/25'
+                      }`}
+                    >
+                      {story.isOverdue
+                        ? `Overdue by ${Math.abs(story.dueInDays)} days`
+                        : `Due in ${story.dueInDays} days`}
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1.5 rounded-full text-xs font-heading font-semibold bg-white/5 text-muted-foreground border border-border/30">
+                      Due date unavailable
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Engine Model', value: engine.model },
@@ -86,7 +207,13 @@ const EngineDetail = () => {
                         animate={{ scale: 1 }}
                         transition={{ delay: i * 0.1 }}
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-heading font-bold ${
-                          i <= currentPhaseIndex ? 'bg-primary text-white shadow-sm' : 'bg-muted text-muted-foreground'
+                          i === currentPhaseIndex
+                            ? health.isAtRisk
+                              ? 'bg-destructive text-white shadow-sm animate-pulse'
+                              : 'bg-primary text-white shadow-sm'
+                            : i <= currentPhaseIndex
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-muted text-muted-foreground'
                         }`}
                       >
                         {i + 1}
@@ -94,6 +221,9 @@ const EngineDetail = () => {
                       <p className={`mt-2 text-xs font-body text-center ${i <= currentPhaseIndex ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                         {phase}
                       </p>
+                      {i === currentPhaseIndex && (
+                        <p className="mt-1 text-[10px] font-body text-destructive/90">You are here</p>
+                      )}
                     </div>
                   ))}
                 </div>

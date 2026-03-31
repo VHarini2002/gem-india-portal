@@ -9,18 +9,19 @@ interface SettingsPageProps {
   setFontSize: (s: string) => void;
   portalView: string;
   setPortalView: (s: string) => void;
+  setTheme?: (isDark: boolean) => void;
 }
 
-const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalView }: SettingsPageProps) => {
+const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalView, setTheme }: SettingsPageProps) => {
   const { isDarkTheme, setIsDarkTheme } = useTheme();
   const [saved, setSaved] = useState(false);
 
   const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
 
   const fontSizes = [
-    { key: 'small', label: 'Small', desc: 'Compact text, more content visible', preview: 'text-xs' },
-    { key: 'medium', label: 'Medium', desc: 'Balanced readability (default)', preview: 'text-sm' },
-    { key: 'large', label: 'Large', desc: 'Larger text for accessibility', preview: 'text-base' },
+    { key: 'small', label: 'Small', desc: 'Compact text, more content visible', preview: 'text-sm' },
+    { key: 'medium', label: 'Medium', desc: 'Balanced readability (default)', preview: 'text-base' },
+    { key: 'large', label: 'Large', desc: 'Larger text for accessibility', preview: 'text-lg' },
   ];
 
   const portalViews = [
@@ -59,7 +60,7 @@ const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalVie
             <h3 className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider mb-3">Appearance</h3>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => setIsDarkTheme(false)}
+                onClick={() => (setTheme ? setTheme(false) : setIsDarkTheme(false))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   !isDarkTheme ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/20'
                 }`}
@@ -69,7 +70,7 @@ const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalVie
                 {!isDarkTheme && <Check className="w-3.5 h-3.5 text-primary" />}
               </button>
               <button
-                onClick={() => setIsDarkTheme(true)}
+                onClick={() => (setTheme ? setTheme(true) : setIsDarkTheme(true))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   isDarkTheme ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/20'
                 }`}

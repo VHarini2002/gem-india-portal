@@ -26,6 +26,10 @@ const sessionLockKey = 'kam-sidebar-locked';
 const KAMSidebar = ({ activeModule, onModuleChange, onAction, onExpandedChange }: KAMSidebarProps) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  // Avoid `new URL()` because BASE_URL can be '' in some dev setups.
+  const base = import.meta.env.BASE_URL ?? "/";
+  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+  const logoSrc = `${normalizedBase}logo.png`;
   const [isHovered, setIsHovered] = useState(false);
   const [isLocked, setIsLocked] = useState(() => sessionStorage.getItem(sessionLockKey) === 'true');
   const isExpanded = isHovered || isLocked;
@@ -47,8 +51,8 @@ const KAMSidebar = ({ activeModule, onModuleChange, onAction, onExpandedChange }
     <aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`fixed left-4 top-4 bottom-4 rounded-[2.5rem] flex flex-col py-6 z-40 shadow-2xl overflow-hidden glass-sidebar transition-all duration-300 ${
-        isExpanded ? 'w-72 px-3' : 'w-20 px-2 items-center'
+      className={`fixed left-4 top-4 bottom-4 rounded-2xl flex flex-col py-6 z-40 shadow-2xl overflow-hidden glass-sidebar transition-all duration-300 ${
+        isExpanded ? 'w-80 px-3' : 'w-20 px-2 items-center'
       }`}
     >
       <div className="w-full justify-center mb-2">
@@ -60,7 +64,7 @@ const KAMSidebar = ({ activeModule, onModuleChange, onAction, onExpandedChange }
           />
         ) : (
           <div>
-          <img src="public/logo.png" alt="GEM India Logo" className="w-20 h-20 object-contain mx-auto rounded-xl" />
+          <img src={logoSrc} alt="GEM India Logo" className="w-20 h-20 object-contain mx-auto rounded-xl" />
         </div>
         )}
       </div>

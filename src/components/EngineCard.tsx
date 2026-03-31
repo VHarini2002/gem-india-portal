@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Engine } from '@/data/mockData';
 import { MapPin, Truck, Clock, ArrowRight } from 'lucide-react';
+import { getEngineHealth } from '@/lib/engineIntelligence';
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
   'In Transit': { label: 'In Transit', cls: 'bg-warning/15 text-warning border border-warning/25' },
@@ -17,6 +18,9 @@ const statusConfig: Record<string, { label: string; cls: string }> = {
 const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
   const navigate = useNavigate();
   const status = statusConfig[engine.status] || { label: engine.status, cls: 'bg-muted/50 text-foreground border border-border' };
+  const health = getEngineHealth(engine);
+  const healthColor =
+    health.score >= 80 ? 'text-success' : health.score >= 70 ? 'text-warning' : 'text-destructive';
 
   return (
     <motion.div
@@ -32,9 +36,39 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
           <p className="font-body text-xs text-muted-foreground">ESN</p>
           <p className="font-heading text-sm font-bold text-primary mt-0.5">{engine.esn}</p>
         </div>
-        <span className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${status.cls}`}>
-          {status.label}
-        </span>
+        <div className="flex items-start gap-2">
+          {/* Health score mini-ring */}
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-2">
+              <div className="relative w-9 h-9">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 42}`}
+                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - health.score / 100)}`}
+                    className={`${healthColor} transition-all`}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className={`text-[10px] font-heading font-bold ${healthColor}`}>{health.score}</span>
+                </div>
+              </div>
+              <span className={`text-[10px] font-body ${health.isAtRisk ? 'text-warning' : 'text-muted-foreground'}`}>
+                {health.driver}
+              </span>
+            </div>
+            <span className={`mt-2 text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${status.cls}`}>
+              {status.label}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2 mb-4">

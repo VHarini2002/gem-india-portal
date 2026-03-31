@@ -8,7 +8,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  // Default to light mode for initial portal load.
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
