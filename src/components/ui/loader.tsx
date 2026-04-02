@@ -7,7 +7,11 @@ export const FullScreenLoader = ({ className }: { className?: string }) => {
   const normalizedBase = base.endsWith("/") ? base : `${base}/`;
   const logoSrc = `${normalizedBase}logo.png`;
   return (
-    <div className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center ${className ?? ""}`}>
+    <div
+      className={`fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-xl bg-white/55 dark:bg-black/35 ${className ?? ""}`}
+    >
+      {/* Keep background lightly visible with a soft thematic wash */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/20 to-transparent dark:from-black/25 dark:via-black/15 dark:to-transparent" />
       <div className="relative flex items-center justify-center">
         <img
           src={logoSrc}

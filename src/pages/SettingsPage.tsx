@@ -1,34 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Sun, Moon, Type, LayoutGrid, X, Check } from 'lucide-react';
+import { Settings, Sun, Moon, User, X, Check } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  patchProfilePreferences,
+  readProfilePreferences,
+  type ProfilePreferences,
+} from '@/lib/profilePreferences';
 
 interface SettingsPageProps {
   onClose: () => void;
-  fontSize: string;
-  setFontSize: (s: string) => void;
-  portalView: string;
-  setPortalView: (s: string) => void;
   setTheme?: (isDark: boolean) => void;
 }
 
-const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalView, setTheme }: SettingsPageProps) => {
+const SettingsPage = ({ onClose, setTheme }: SettingsPageProps) => {
+  const { user } = useAuth();
   const { isDarkTheme, setIsDarkTheme } = useTheme();
   const [saved, setSaved] = useState(false);
+  const userKey = user?.email ?? null;
 
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const [profile, setProfile] = useState<ProfilePreferences>({
+    name: '',
+    phone: '',
+    address: '',
+    alternateEmail: '',
+  });
 
-  const fontSizes = [
-    { key: 'small', label: 'Small', desc: 'Compact text, more content visible', preview: 'text-sm' },
-    { key: 'medium', label: 'Medium', desc: 'Balanced readability (default)', preview: 'text-base' },
-    { key: 'large', label: 'Large', desc: 'Larger text for accessibility', preview: 'text-lg' },
-  ];
+  useEffect(() => {
+    if (!userKey) return;
+    const fallback = { name: user?.name ?? '' };
+    setProfile(readProfilePreferences(userKey, fallback));
+  }, [userKey, user?.name]);
 
-  const portalViews = [
-    { key: 'default', label: 'Default', desc: 'Standard dashboard layout' },
-    { key: 'compact', label: 'Compact', desc: 'Dense information display' },
-    { key: 'expanded', label: 'Expanded', desc: 'Spacious comfortable layout' },
-  ];
+  const save = () => {
+    if (!userKey) return;
+    patchProfilePreferences(userKey, profile);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <motion.div className="fixed inset-0 z-50 flex" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -39,7 +49,11 @@ const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalVie
         exit={{ x: -400 }}
         transition={{ type: 'spring', damping: 28 }}
         className="relative z-10 w-full max-w-md h-full flex flex-col overflow-hidden"
-        style={{ background: 'rgba(10, 12, 22, 0.92)', backdropFilter: 'blur(32px)', borderRight: '1px solid rgba(255,255,255,0.08)' }}
+        style={{
+          background: isDarkTheme ? 'rgba(20, 20, 22, 0.92)' : 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(32px)',
+          borderRight: isDarkTheme ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/08">
@@ -82,55 +96,62 @@ const SettingsPage = ({ onClose, fontSize, setFontSize, portalView, setPortalVie
             </div>
           </div>
 
-          {/* Font Size */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Type className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">Text Size</h3>
+              <User className="w-4 h-4 text-primary" />
+              <h3 className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">
+                Profile Settings
+              </h3>
             </div>
-            <div className="space-y-2">
-              {fontSizes.map(f => (
-                <button
-                  key={f.key}
-                  onClick={() => setFontSize(f.key)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
-                    fontSize === f.key ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <span className={`${f.preview} font-heading font-bold w-6 text-center ${fontSize === f.key ? 'text-primary' : 'text-muted-foreground'}`}>Aa</span>
-                  <div className="flex-1">
-                    <p className={`text-sm font-heading font-semibold ${fontSize === f.key ? 'text-primary' : 'text-foreground'}`}>{f.label}</p>
-                    <p className="text-xs font-body text-muted-foreground">{f.desc}</p>
-                  </div>
-                  {fontSize === f.key && <Check className="w-4 h-4 text-primary" />}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Portal View */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <LayoutGrid className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">Portal View</h3>
-            </div>
-            <div className="space-y-2">
-              {portalViews.map(v => (
-                <button
-                  key={v.key}
-                  onClick={() => setPortalView(v.key)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
-                    portalView === v.key ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <LayoutGrid className={`w-5 h-5 flex-shrink-0 ${portalView === v.key ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <div className="flex-1">
-                    <p className={`text-sm font-heading font-semibold ${portalView === v.key ? 'text-primary' : 'text-foreground'}`}>{v.label}</p>
-                    <p className="text-xs font-body text-muted-foreground">{v.desc}</p>
-                  </div>
-                  {portalView === v.key && <Check className="w-4 h-4 text-primary" />}
-                </button>
-              ))}
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Name
+                </label>
+                <input
+                  value={profile.name}
+                  onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/[0.06] text-white placeholder:text-white/30 focus:ring-2 focus:ring-[#F5C000]/20 outline-none text-sm"
+                  placeholder="Enter name"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Number
+                </label>
+                <input
+                  value={profile.phone}
+                  onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/[0.06] text-white placeholder:text-white/30 focus:ring-2 focus:ring-[#F5C000]/20 outline-none text-sm"
+                  placeholder="Enter number"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Address
+                </label>
+                <textarea
+                  value={profile.address}
+                  onChange={(e) => setProfile((p) => ({ ...p, address: e.target.value }))}
+                  className="w-full min-h-[84px] resize-none px-4 py-3 rounded-xl border border-white/10 bg-white/[0.06] text-white placeholder:text-white/30 focus:ring-2 focus:ring-[#F5C000]/20 outline-none text-sm"
+                  placeholder="Enter address"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Alternate Email
+                </label>
+                <input
+                  value={profile.alternateEmail}
+                  onChange={(e) => setProfile((p) => ({ ...p, alternateEmail: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/[0.06] text-white placeholder:text-white/30 focus:ring-2 focus:ring-[#F5C000]/20 outline-none text-sm"
+                  placeholder="Enter alternate email"
+                />
+              </div>
             </div>
           </div>
         </div>

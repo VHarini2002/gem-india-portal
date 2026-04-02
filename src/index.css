@@ -55,15 +55,19 @@
     /* Orange status colors */
     --success: 38 82% 50%;
     --warning: 40 96% 54%;
+
+    /* GEM new UI (dark-first) */
+    --gem-bg: 10 10 11; /* rgb for overlays */
   }
 
   .dark {
     /* Dark mode */
     /* Grey (replace navy) */
-    --background: 0 0% 23%;
+    /* New UI background (matches reference HTML) */
+    --background: 240 5% 4%;
     --foreground: 0 0% 97%;
 
-    --card: 240 2% 27%;
+    --card: 240 2% 10%;
     --card-foreground: 0 0% 97%;
 
     --popover: 240 2% 27%;
@@ -130,10 +134,186 @@
   }
 }
 
+/* ===== Beam canvas background (fixed) ===== */
+.beam-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  filter: blur(35px);
+  pointer-events: none;
+}
+
+.beam-bg-radial {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 0%, rgb(var(--gem-bg) / 0.82) 100%);
+}
+
+/* ===== Top bar buttons (from reference HTML) ===== */
+.critical-items-btn {
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(18px);
+  transition: all 0.2s ease;
+  outline: none;
+  padding: 0;
+}
+
+.critical-items-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.critical-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid rgb(var(--gem-bg) / 1);
+}
+
+.sign-out-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(18px);
+  transition: all 0.2s ease;
+}
+
+.sign-out-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Global scrollbar styling (charcoal track + yellow thumb) */
+html {
+  scrollbar-color: #F5C000 rgba(20, 20, 22, 0.85);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(20, 20, 22, 0.85);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #F5C000;
+  border-radius: 999px;
+  border: 2px solid rgba(20, 20, 22, 0.95);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #ffc800;
+}
+
+/* ===== Dock (bottom nav — lives in PortalFooter) ===== */
+.dock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding: 10px 14px;
+  animation: dockFloat 4s ease-in-out infinite;
+}
+
+.dock-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+  outline: none;
+}
+
+.dock-icon {
+  width: 22px;
+  height: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.18s ease;
+}
+
+.dock-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-4px);
+}
+
+.dock-item:hover .dock-icon {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dock-item.active {
+  background: rgba(245, 192, 0, 0.1);
+}
+
+.dock-item.active .dock-icon {
+  color: #f5c000;
+}
+
+.dock-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+
+.dock-item:hover::after {
+  opacity: 1;
+}
+
+@keyframes dockFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
 /* Portal density modes (default / compact / expanded) */
 .portal-view-compact .glass-card,
 .portal-view-compact .glass-card-glow {
-  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.28);
+  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.22);
 }
 
 .portal-view-expanded .glass-card,
@@ -196,14 +376,14 @@
     @apply relative rounded-2xl;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    box-shadow: 0 4px 24px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.16);
   }
 
   .glass-card-glow {
     @apply relative rounded-2xl;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 4px 14px hsl(0 0% 0% / 0.12);
     transition: all 0.3s ease;
   }
 
@@ -211,47 +391,47 @@
     background: hsl(var(--card));
     border-color: hsl(var(--primary));
     box-shadow:
-      0 12px 40px hsl(0 0% 0% / 0.45),
-      0 0 0 1px hsl(var(--primary) / 0.35);
+      0 12px 40px hsl(0 0% 0% /0.25),
+      0 0 0 1px hsl(var(--primary) / 0.25);
     transform: translateY(-2px);
   }
 
   .dark .glass-card {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    box-shadow: 0 4px 24px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.18);
   }
 
   .dark .glass-card-glow {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 4px 14px hsl(0 0% 0% / 0.24);
   }
 
   .dark .glass-card-glow:hover {
     background: hsl(var(--card));
     border-color: hsl(var(--primary));
     box-shadow:
-      0 12px 40px hsl(0 0% 0% / 0.45),
-      0 0 0 1px hsl(var(--primary) / 0.35);
+      0 6px 20px hsl(0 0% 0% / 0.3),
+      0 0 0 1px hsl(var(--primary) / 0.25);
   }
 
   .glass-sidebar {
     background: #3a3a3a;
     border: 1px solid hsl(var(--sidebar-border));
-    box-shadow: 4px 0 32px hsl(0 0% 0% / 0.45);
+    box-shadow: 2px 0 12px hsl(0 0% 0% / 0.18);
   }
 
   .dark .glass-sidebar {
     background: #3a3a3a;
     border: 1px solid hsl(var(--sidebar-border));
-    box-shadow: 4px 0 32px hsl(0 0% 0% / 0.45);
+    box-shadow: 2px 0 12px hsl(0 0% 0% / 0.18);
   }
 
   .glass-header {
     background: hsl(var(--background));
     border-bottom: 1px solid hsl(var(--border));
-    box-shadow: 0 2px 20px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 1px 8px hsl(0 0% 0% / 0.22);
   }
 
   /* Tighter, more industrial corner radius tuning */
@@ -264,7 +444,7 @@
   .dark .glass-header {
     background: hsl(var(--background));
     border-bottom: 1px solid hsl(var(--border));
-    box-shadow: 0 2px 20px hsl(0 0% 0% / 0.35);
+    box-shadow: 0 1px 8px hsl(0 0% 0% / 0.24);
   }
 
   .btn-primary {
@@ -272,12 +452,12 @@
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     transition: all 0.2s ease;
-    box-shadow: 0 2px 12px hsl(var(--primary) / 0.3);
+    box-shadow: 0 1px 6px hsl(var(--primary) / 0.25);
   }
 
   .btn-primary:hover {
     background: hsl(var(--primary) / 0.9);
-    box-shadow: 0 4px 20px hsl(var(--primary) / 0.4);
+    box-shadow: 0 2px 10px hsl(var(--primary) / 0.32);
     transform: translateY(-1px);
   }
 
@@ -292,7 +472,7 @@
   .btn-secondary:hover {
     background: hsl(var(--secondary) / 0.8);
     border-color: hsl(var(--primary) / 0.3);
-    box-shadow: 0 4px 12px hsl(252 40% 30% / 0.08);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.16);
   }
 
   .btn-neon { @apply btn-secondary; }
@@ -324,7 +504,7 @@
   }
 
   .progress-glow {
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(300, 1%, 19%));
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(24, 83%, 44%));
     box-shadow: 0 0 8px hsl(var(--primary) / 0.35);
   }
 
@@ -362,6 +542,603 @@
 
 .animate-spin-slow {
   animation: spin-slow 2.2s linear infinite;
+}
+
+/* ===== GEM AI — bottom pill + chat (reference HTML) ===== */
+@property --gem-orb-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes gem-rotate-border {
+  to {
+    --gem-orb-angle: 360deg;
+  }
+}
+
+@keyframes gem-fade-up-ai {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gem-chat-open {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gem-chat-close {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+
+@keyframes gem-chat-msg-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gem-chat-type-pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gem-chat-particle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  85% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.gem-ai-wrapper {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 60;
+  opacity: 0;
+  animation: gem-fade-up-ai 0.9s ease forwards 0.5s;
+}
+
+/* GEM AI pill embedded in portal footer (no duplicate floating control) */
+.gem-ai-wrapper--footer {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  z-index: 1;
+  opacity: 1;
+  animation: none;
+}
+
+.gem-ai-pill {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+
+.gem-ai-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.gem-ai-pill:hover .gem-ai-pill-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gem-ai-pill-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.05em;
+  transition: color 0.18s ease;
+}
+
+.gem-ai-orb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background:
+    conic-gradient(
+      from calc(var(--gem-orb-angle) * 2) at 30% 70%,
+      hsl(45, 90%, 70%),
+      transparent 30% 70%,
+      hsl(45, 90%, 70%)
+    ),
+    conic-gradient(
+      from calc(var(--gem-orb-angle) * -1) at 70% 30%,
+      hsl(35, 80%, 55%),
+      transparent 40% 60%,
+      hsl(35, 80%, 55%)
+    );
+  filter: blur(1.5px) contrast(1.8);
+  animation: gem-rotate-border 20s linear infinite;
+}
+
+.gem-ai-orb--pill {
+  width: 24px;
+  height: 24px;
+  filter: blur(0.5px) contrast(1.2);
+  background: conic-gradient(
+    from var(--gem-orb-angle),
+    hsl(45, 100%, 70%),
+    hsl(35, 90%, 55%),
+    hsl(50, 80%, 50%),
+    hsl(45, 100%, 70%)
+  );
+}
+
+.gem-chat-window {
+  position: fixed;
+  bottom: 96px;
+  right: 48px;
+  width: min(360px, calc(100vw - 32px));
+  height: min(460px, calc(100vh - 140px));
+  z-index: 60;
+  display: none;
+  pointer-events: none;
+}
+
+.gem-chat-window.gem-chat-window--open {
+  display: block;
+  pointer-events: auto;
+  animation: gem-chat-open 0.35s ease-out forwards;
+}
+
+.gem-chat-window.gem-chat-window--closing {
+  display: block;
+  pointer-events: auto;
+  animation: gem-chat-close 0.25s ease-in forwards;
+}
+
+.gem-chat-window.gem-chat-window--footer {
+  bottom: 6.75rem;
+  right: 24px;
+  width: min(320px, calc(100vw - 32px));
+  z-index: 70;
+}
+
+@media (min-width: 768px) {
+  .gem-chat-window.gem-chat-window--footer {
+    right: max(px, calc(50vw - 900px + 24px));
+  }
+}
+
+.gem-chat-outer {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--gem-orb-angle),
+    rgba(245, 192, 0, 0.8),
+    rgba(245, 192, 0, 0.05) 40%,
+    rgba(245, 192, 0, 0.8)
+  );
+  animation: gem-rotate-border 6s linear infinite;
+}
+
+.gem-chat-inner {
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 11, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.gem-chat-header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.gem-chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gem-chat-header-title {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gem-chat-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.18s ease;
+  line-height: 1;
+}
+
+.gem-chat-close:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gem-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: none;
+}
+
+.gem-chat-messages::-webkit-scrollbar {
+  display: none;
+}
+
+.gem-chat-msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: gem-chat-msg-in 0.3s ease forwards;
+}
+
+.gem-chat-msg--assistant {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 4px 14px 14px 14px;
+}
+
+.gem-chat-msg--user {
+  align-self: flex-end;
+  background: rgba(245, 192, 0, 0.1);
+  border: 0.5px solid rgba(245, 192, 0, 0.2);
+  color: #f5c000;
+  border-radius: 14px 4px 14px 14px;
+}
+
+.gem-chat-typing {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px 14px 14px 14px;
+}
+
+.gem-chat-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f5c000;
+  animation: gem-chat-type-pulse 1.4s ease-in-out infinite;
+}
+
+.gem-chat-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.gem-chat-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.gem-chat-input-row {
+  height: 52px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gem-chat-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  color: #fff;
+  font-size: 13px;
+  padding: 0 16px;
+  height: 36px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.gem-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.gem-chat-input:focus {
+  border-color: rgba(245, 192, 0, 0.4);
+  box-shadow: 0 0 0 3px rgba(245, 192, 0, 0.06);
+}
+
+.gem-chat-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(245, 192, 0, 0.12);
+  border: 0.5px solid rgba(245, 192, 0, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.18s ease;
+}
+
+.gem-chat-send:hover {
+  background: rgba(245, 192, 0, 0.22);
+}
+
+.gem-chat-send-icon {
+  width: 16px;
+  height: 16px;
+  stroke: #f5c000;
+  stroke-width: 1.5;
+}
+
+.gem-chat-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(245, 192, 0, 0.2);
+  pointer-events: none;
+  animation: gem-chat-particle var(--dur, 6s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ===== Notification banner stack (reference HTML) ===== */
+@keyframes gem-banner-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes gem-banner-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gem-banner-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes gem-banner-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.gem-banner-stack {
+  position: fixed;
+  top: 104px;
+  right: 24px;
+  z-index: 42;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+/* “What needs attention” — same corner as notification popups (top-right) */
+.gem-banner-stack.gem-banner-stack--attention {
+  z-index: 45;
+}
+
+.gem-banner-stack .gem-banner,
+.gem-banner-stack .gem-banner-all-clear {
+  pointer-events: auto;
+}
+
+.gem-banner {
+  position: relative;
+  background: rgba(10, 10, 11, 0.85);
+  border: 0.5px solid;
+  border-radius: 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 12px 14px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: gem-banner-in 0.5s ease forwards;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.gem-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* Full panel list: no initial hide, optional stagger handled in React */
+.gem-banner.gem-banner--static {
+  opacity: 1;
+  animation: none;
+}
+
+.gem-banner-icon-bg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gem-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gem-banner-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gem-banner-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.gem-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gem-banner-cta {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: transparent;
+  border: 0.5px solid;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+
+.gem-banner-cta:hover {
+  background: var(--hover-bg) !important;
+}
+
+.gem-banner-close {
+  width: 28px;
+  height: 28px;
+  color: rgba(255, 255, 255, 0.25);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.18s ease;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.gem-banner-close:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gem-banner-all-clear {
+  background: rgba(74, 222, 128, 0.06);
+  border: 0.5px solid rgba(74, 222, 128, 0.2);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: rgba(74, 222, 128, 0.7);
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  align-self: flex-end;
+}
+
+.gem-banner-all-clear--in {
+  animation: gem-banner-fade-in 0.4s ease forwards;
+}
+
+.gem-banner-all-clear--in.gem-banner-all-clear--out {
+  animation: gem-banner-fade-out 0.3s ease forwards;
 }
 
 /* stylelint-enable at-rule-no-unknown */

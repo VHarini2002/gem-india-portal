@@ -8,8 +8,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Default to light mode for initial portal load.
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  // Dark mode is default for the new client dashboard experience.
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
 
   useEffect(() => {
     const root = document.documentElement;

@@ -1,24 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockEngines, mockShipments, mockParts, mockFinancials, getPhases, Part } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import AnimatedCounter from '@/components/AnimatedCounter';
-import PartLifecycleDialog from '@/components/PartLifecycleDialog';
 import AppLayout from '@/components/AppLayout';
-import { Tooltip as RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Package, Truck, Settings, Wrench, FileText, DollarSign, BarChart3, Clock, MapPin, Plane, Ship, Car } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { ArrowLeft, Package, Truck, Settings, FileText, DollarSign, Clock, MapPin, Plane, Ship, Car, LayoutDashboard } from 'lucide-react';
+import { EngineAnalysisDashboard } from '@/components/EngineAnalysisDashboard';
 import { getEngineHealth, getEngineStory } from '@/lib/engineIntelligence';
 
 const allTabs = [
   { id: 'overview', label: 'Overview', icon: Package },
   { id: 'logistics', label: 'Logistics', icon: Truck },
   { id: 'service', label: 'Service Process', icon: Settings },
-  { id: 'parts', label: 'Parts', icon: Wrench },
   { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'analysis', label: 'Engine Analysis', icon: LayoutDashboard },
   { id: 'financial', label: 'Financial', icon: DollarSign },
-  { id: 'analysis', label: 'Analysis', icon: BarChart3 },
 ];
 
 const CHART_STYLE = { background: 'rgba(10, 14, 26, 0)', border: '1px solid rgba(255, 255, 255, 0)', borderRadius: '12px', fontFamily: 'Inter', fontSize: '12px', color: '#9ca3af' };
@@ -28,11 +25,26 @@ const EngineDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const [partsFilter, setPartsFilter] = useState<'all' | 'Scrap' | 'Repair' | 'Sell'>('all');
-  const [selectedPart, setSelectedPart] = useState<Part | null>(null);
-  const [isPartDialogOpen, setIsPartDialogOpen] = useState(false);
+  const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
 
   const engine = mockEngines.find(e => `${e.workOrder}-${e.esn}` === id);
+
+  const phaseMeta = useMemo(() => {
+    if (!engine) return [] as { phase: string; plannedStart: number; plannedEnd: number; delayed: boolean }[];
+    const phases = getPhases(engine.serviceType);
+    const currentPhaseIndex = phases.indexOf(engine.currentPhase);
+    const story = getEngineStory(engine);
+    return phases.map((phase, index) => {
+      const plannedDays = story.plannedDays ?? phases.length * 10;
+      const perPhase = plannedDays / Math.max(1, phases.length);
+      const plannedStart = index * perPhase;
+      const plannedEnd = (index + 1) * perPhase;
+      const elapsed = story.elapsedDays ?? 0;
+      const delayed = elapsed > plannedEnd + 5 && index >= currentPhaseIndex;
+      return { phase, plannedStart, plannedEnd, delayed };
+    });
+  }, [engine]);
+
   if (!engine) return <div className="min-h-screen flex items-center justify-center font-heading text-primary">Engine not found</div>;
 
   const shipments = mockShipments.filter(s => s.engineId === engine.id);
@@ -40,7 +52,7 @@ const EngineDetail = () => {
   const financial = mockFinancials.find(f => f.engineId === engine.id);
   const phases = getPhases(engine.serviceType);
   const isLeaseStorage = engine.serviceType === 'Lease Storage';
-  const tabs = isLeaseStorage ? allTabs.filter(t => t.id !== 'parts') : allTabs;
+  const tabs = allTabs;
   const currentPhaseIndex = phases.indexOf(engine.currentPhase);
   const health = getEngineHealth(engine);
   const story = getEngineStory(engine);
@@ -49,142 +61,118 @@ const EngineDetail = () => {
       ? Math.min(100, Math.max(0, story.timelineProgress))
       : 0;
 
-  const filteredParts = partsFilter === 'all' ? parts : parts.filter(p => p.category === partsFilter);
   const scrapCount = parts.filter(p => p.category === 'Scrap').length;
   const repairCount = parts.filter(p => p.category === 'Repair').length;
   const sellCount = parts.filter(p => p.category === 'Sell').length;
   const llpCount = parts.filter(p => p.llpStatus === 'LLP').length;
 
-  
+  const sellParts = parts.filter(p => p.category === 'Sell');
+  const saleReadyParts = sellParts.filter(p => p.saleStatus === 'Available');
+  const totalRecoveredValue = sellParts.reduce((sum, p) => sum + (p.price ?? 0), 0);
+  const saleReadyValue = saleReadyParts.reduce((sum, p) => sum + (p.price ?? 0), 0);
+  const totalPartsCount = parts.length || 1;
+  const yieldPct = ((sellCount + repairCount) / totalPartsCount) * 100;
+  const scrapPct = (scrapCount / totalPartsCount) * 100;
+  const topValueParts = [...sellParts]
+    .filter(p => typeof p.price === 'number')
+    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
+    .slice(0, 3);
 
   const renderTab = () => {
     switch (activeTab) {
       case 'overview':
         return (
           <div className="space-y-6">
-            {/* Engine Story */}
             <div className="glass-card-glow p-6 rounded-2xl">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <h3 className="font-heading text-sm font-bold text-foreground">Engine Story</h3>
-                  <p className="font-body text-xs text-muted-foreground mt-1">
-                    Entry → Today → Completion (decision-focused timeline)
-                  </p>
+              <h3 className="font-heading text-sm font-bold text-foreground mb-6">Lifecycle Timeline</h3>
+              <div className="relative">
+                <div className="relative pt-1 pb-2 px-6">
+                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-muted" />
+                  <div
+                    className="absolute top-4 left-0 h-0.5 progress-glow"
+                    style={{ width: `${(currentPhaseIndex / (phases.length - 1)) * 100}%` }}
+                  />
+
+                  <div className="relative h-[86px]">
+                    {phaseMeta.map(({ phase, delayed }, i) => {
+                      const isClickable = delayed || i === currentPhaseIndex;
+                      const leftPct = phases.length > 1 ? (i / (phases.length - 1)) * 100 : 0;
+                      return (
+                        <div
+                          key={phase}
+                          className="absolute top-0 flex flex-col items-center"
+                          style={{ left: `${leftPct}%`, transform: 'translateX(-50%)' }}
+                        >
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-heading font-bold ${
+                              i === currentPhaseIndex
+                                ? health.isAtRisk
+                                  ? 'bg-destructive text-white shadow-sm animate-pulse'
+                                  : 'bg-primary text-white shadow-sm'
+                                : i <= currentPhaseIndex
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-muted text-muted-foreground'
+                            } ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+                            onClick={() => {
+                              if (!isClickable) return;
+                              setExpandedPhase(expandedPhase === phase ? null : phase);
+                            }}
+                          >
+                            {i + 1}
+                          </motion.div>
+                          <p className={`mt-2 text-xs font-body text-center whitespace-nowrap ${i <= currentPhaseIndex ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                            {phase}
+                          </p>
+                          {i === currentPhaseIndex && (
+                            <p className="mt-1 text-[10px] font-body text-destructive/90 whitespace-nowrap">You are here</p>
+                          )}
+
+                          {isClickable && expandedPhase === phase && (
+                            <div className="mt-2 w-[220px] text-left text-[11px] font-body bg-white/5 border border-border/40 rounded-xl p-3 shadow-lg">
+                              <p className="text-muted-foreground">
+                                {delayed
+                                  ? 'This phase is running longer than planned. Consider escalation.'
+                                  : i < currentPhaseIndex
+                                  ? 'Completed on time.'
+                                  : 'On-track vs current plan.'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[11px] font-body text-muted-foreground">
                 <div className="flex items-center gap-3">
-                  <span
-                    className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
-                      health.score >= 80
-                        ? 'bg-success/15 text-success border border-success/25'
-                        : health.score >= 70
-                        ? 'bg-warning/15 text-warning border border-warning/25'
-                        : 'bg-destructive/15 text-destructive border border-destructive/25'
-                    }`}
-                  >
-                    Health {health.score}/100
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_0_1px_rgba(255,255,255,0.10)]" /> On track
                   </span>
-                  <span className="text-[11px] font-body text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl border border-border/30">
-                    {health.driver}
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_0_1px_rgba(255,255,255,0.10)]" /> At risk / delayed
                   </span>
                 </div>
-              </div>
-
-              <div className="relative pt-3 pb-4">
-                <div className="absolute left-0 right-0 top-4 h-1.5 rounded-full bg-muted" />
-                <motion.div
-                  className="absolute left-0 top-4 h-1.5 rounded-full progress-glow"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, story.timelineProgress ?? 0))}%`,
-                  }}
-                  initial={{ scaleX: 0.7 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.6 }}
-                />
-
-                {/* Markers */}
-                <div className="absolute top-0 left-0 -translate-x-0.5 text-[10px] font-body text-muted-foreground">
-                  Entry
-                </div>
-                <div
-                  className="absolute top-0 -translate-x-1/2 text-[10px] font-body text-muted-foreground whitespace-nowrap"
-                  style={{ left: `${todayPct}%` }}
-                >
-                  Today
-                </div>
-                <div className="absolute top-0 right-0 translate-x-0.5 text-[10px] font-body text-muted-foreground">
-                  Completion
-                </div>
-
-                {/* You are here pulse */}
-                <motion.div
-                  className={`absolute top-3 -translate-x-1/2 w-4 h-4 rounded-full ${
-                    health.isAtRisk ? 'bg-destructive' : 'bg-primary'
-                  }`}
-                  style={{ left: `${todayPct}%` }}
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 1.2, repeat: Infinity }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
-                  <p className="text-xs font-body text-muted-foreground">Entry</p>
-                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
-                    {engine.inductionDate}
-                  </p>
-                </div>
-                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
-                  <p className="text-xs font-body text-muted-foreground">Today</p>
-                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
-                    {engine.lastUpdated}
-                  </p>
-                </div>
-                <div className="bg-white/5 border border-border/30 rounded-xl p-4">
-                  <p className="text-xs font-body text-muted-foreground">Completion</p>
-                  <p className="text-sm font-heading font-semibold text-foreground mt-1">
-                    {engine.expectedCompletion}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <p className="text-xs font-body text-muted-foreground">
-                  Elapsed vs planned:{' '}
-                  <span className="font-heading text-foreground">
-                    {typeof story.elapsedDays === 'number' ? story.elapsedDays : '-'} /{' '}
-                    {typeof story.plannedDays === 'number' ? story.plannedDays : '-'} days
-                  </span>
-                </p>
-
-                <div className="flex items-center gap-2">
-                  {typeof story.dueInDays === 'number' ? (
-                    <span
-                      className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
-                        story.isOverdue ? 'bg-destructive/15 text-destructive border border-destructive/25' : 'bg-warning/15 text-warning border border-warning/25'
-                      }`}
-                    >
+                {typeof story.dueInDays === 'number' && (
+                  <p>
+                    Predicted completion:{" "}
+                    <span className="font-semibold text-foreground">
                       {story.isOverdue
-                        ? `Overdue by ${Math.abs(story.dueInDays)} days`
-                        : `Due in ${story.dueInDays} days`}
+                        ? `slipping by ~${Math.abs(story.dueInDays)} days`
+                        : `on track (due in ~${story.dueInDays} days)`}
                     </span>
-                  ) : (
-                    <span className="px-3 py-1.5 rounded-full text-xs font-heading font-semibold bg-white/5 text-muted-foreground border border-border/30">
-                      Due date unavailable
-                    </span>
-                  )}
-                </div>
+                  </p>
+                )}
               </div>
             </div>
-
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Engine Model', value: engine.model },
-                { label: 'ESN', value: engine.esn },
-                { label: 'Work Order', value: engine.workOrder },
-                { label: 'Client', value: engine.clientName },
                 { label: 'Induction Date', value: engine.inductionDate },
                 { label: 'Expected Completion', value: engine.expectedCompletion },
-                { label: 'Current Phase', value: engine.currentPhase },
+                { label: 'Work Order', value: engine.workOrder },
                 { label: 'Service Type', value: engine.serviceType },
               ].map((item, i) => (
                 <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="glass-card p-4 rounded-xl">
@@ -192,42 +180,6 @@ const EngineDetail = () => {
                   <p className="font-heading text-sm font-semibold text-foreground">{item.value}</p>
                 </motion.div>
               ))}
-            </div>
-
-            <div className="glass-card-glow p-6 rounded-2xl">
-              <h3 className="font-heading text-sm font-bold text-foreground mb-6">Lifecycle Timeline</h3>
-              <div className="relative">
-                <div className="flex items-center justify-between relative">
-                  <div className="absolute top-4 left-0 right-0 h-0.5 bg-muted" />
-                  <div className="absolute top-4 left-0 h-0.5 progress-glow" style={{ width: `${(currentPhaseIndex / (phases.length - 1)) * 100}%` }} />
-                  {phases.map((phase, i) => (
-                    <div key={phase} className="relative z-10 flex flex-col items-center" style={{ width: `${100 / phases.length}%` }}>
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-heading font-bold ${
-                          i === currentPhaseIndex
-                            ? health.isAtRisk
-                              ? 'bg-destructive text-white shadow-sm animate-pulse'
-                              : 'bg-primary text-white shadow-sm'
-                            : i <= currentPhaseIndex
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {i + 1}
-                      </motion.div>
-                      <p className={`mt-2 text-xs font-body text-center ${i <= currentPhaseIndex ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                        {phase}
-                      </p>
-                      {i === currentPhaseIndex && (
-                        <p className="mt-1 text-[10px] font-body text-destructive/90">You are here</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {engine.status === 'In Transit' && (
@@ -338,75 +290,6 @@ const EngineDetail = () => {
           </div>
         );
 
-      case 'parts':
-        return (
-          <div>
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {(['all', 'Scrap', 'Repair', 'Sell'] as const).map(f => (
-                <button key={f} onClick={() => setPartsFilter(f)} className={`px-4 py-2 rounded-xl font-heading text-xs font-semibold transition-all ${partsFilter === f ? 'btn-primary' : 'btn-secondary'}`}>
-                  {f === 'all' ? `All (${parts.length})` : `${f} (${parts.filter(p => p.category === f).length})`}
-                </button>
-              ))}
-            </div>
-            <div className="glass-card-glow rounded-2xl overflow-hidden">
-              <table className="w-full text-sm font-body">
-                <thead>
-                  <tr className="border-b border-border/50 bg-white/3">
-                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Part #</th>
-                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Serial</th>
-                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Category</th>
-                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Location</th>
-                    <th className="text-left py-3 px-4 font-heading text-xs font-semibold text-muted-foreground">Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredParts.slice(0, 20).map((p, i) => (
-                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/20 hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4">
-                        {p.category === 'Scrap' ? (
-                          <TooltipProvider>
-                            <RadixTooltip>
-                              <TooltipTrigger asChild>
-                                <span className="text-muted-foreground/60 cursor-not-allowed">{p.partNumber}</span>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-white border-border text-foreground">
-                                <p className="text-xs">Scrap parts have no further lifecycle</p>
-                              </TooltipContent>
-                            </RadixTooltip>
-                          </TooltipProvider>
-                        ) : (
-                          <button onClick={() => { setSelectedPart(p); setIsPartDialogOpen(true); }} className="text-primary font-semibold hover:underline cursor-pointer text-left">
-                            {p.partNumber}
-                          </button>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-foreground/80">{p.serialNumber}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          p.category === 'Scrap' ? 'bg-red-500/15 text-red-400 border border-red-500/25'
-                          : p.category === 'Repair' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
-                          : 'bg-green-500/15 text-green-400 border border-green-500/25'
-                        }`}>
-                          {p.category}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">{p.currentLocation}</td>
-                      <td className="py-3 px-4 text-muted-foreground text-xs">
-                        {p.category === 'Repair' && `Cost: $${p.repairCost?.toLocaleString()}`}
-                        {p.category === 'Sell' && `$${p.price?.toLocaleString()} • ${p.saleStatus}`}
-                        {p.category === 'Scrap' && p.scrapReason}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredParts.length > 20 && (
-                <p className="text-center text-xs text-muted-foreground py-4 font-body">Showing 20 of {filteredParts.length} parts</p>
-              )}
-            </div>
-          </div>
-        );
-
       case 'documents':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -428,6 +311,20 @@ const EngineDetail = () => {
               </motion.div>
             ))}
           </div>
+        );
+
+      case 'analysis':
+        return (
+          <EngineAnalysisDashboard
+            engine={engine}
+            parts={parts}
+            financial={financial}
+            shipments={shipments}
+            phases={phases}
+            currentPhaseIndex={currentPhaseIndex}
+            health={health}
+            story={story}
+          />
         );
 
       case 'financial':
@@ -484,90 +381,6 @@ const EngineDetail = () => {
           </div>
         );
 
-      case 'analysis': {
-        const pieData = [
-          { name: 'Scrap', value: scrapCount, color: '#ef4444' },
-          { name: 'Repair', value: repairCount, color: '#f59e0b' },
-          { name: 'Sell', value: sellCount, color: '#10b981' },
-        ];
-        const revenueData = [
-          { name: 'Parts Sold', value: financial ? financial.totalRevenue / 1000 : 0 },
-          { name: 'Repair Costs', value: financial ? financial.repairCost / 1000 : 0 },
-          { name: 'Logistics', value: financial ? financial.logisticsCost / 1000 : 0 },
-          { name: 'Net Revenue', value: financial ? financial.netPayable / 1000 : 0 },
-        ];
-        const storageLine = Array.from({ length: 12 }, (_, i) => ({
-          month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-          cost: engine.serviceType === 'Lease Storage' ? (i + 1) * 4500 : 0,
-        }));
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="glass-card-glow p-6 rounded-2xl">
-              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Parts Distribution</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
-                    {pieData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="transparent" />)}
-                  </Pie>
-                  <RechartsTooltip contentStyle={CHART_STYLE} />
-                  <Legend wrapperStyle={{ fontFamily: 'Inter', fontSize: '12px' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="glass-card-glow p-6 rounded-2xl">
-              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Revenue Breakdown ($K)</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(200, 210, 230, 0)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsla(221, 9.80%, 50.00%, 0.00)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'hsla(221, 9.80%, 50.00%, 0.00)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip contentStyle={CHART_STYLE} />
-                  <Bar dataKey="value" fill="hsl(221,83%,53%)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </motion.div>
-
-            {engine.serviceType === 'Lease Storage' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="glass-card-glow p-6 rounded-2xl lg:col-span-2">
-                <h3 className="font-heading text-sm font-bold text-foreground mb-4">Storage Cost Accumulation</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={storageLine}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,210,230,0.5)" />
-                    <XAxis dataKey="month" tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(220,10%,50%)', fontFamily: 'Inter', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={CHART_STYLE} />
-                    <Line type="monotone" dataKey="cost" stroke="hsl(221,83%,53%)" strokeWidth={2.5} dot={{ fill: 'hsl(221,83%,53%)', r: 4, strokeWidth: 0 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </motion.div>
-            )}
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="glass-card-glow p-6 rounded-2xl">
-              <h3 className="font-heading text-sm font-bold text-foreground mb-4">Engine Lifecycle Progress</h3>
-              <div className="flex items-center justify-center">
-                <div className="relative w-36 h-36">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(220,15%,90%)" strokeWidth="8" />
-                    <motion.circle
-                      cx="50" cy="50" r="40" fill="none" stroke="hsl(221,83%,53%)"
-                      strokeWidth="8" strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 40}`}
-                      initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - engine.progress / 100) }}
-                      transition={{ duration: 1.5, ease: 'easeOut' }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <AnimatedCounter target={engine.progress} suffix="%" className="font-heading text-2xl font-bold text-primary" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        );
-      }
-
       default:
         return null;
     }
@@ -598,9 +411,9 @@ const EngineDetail = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className={`px-3 py-1.5 rounded-full text-xs font-heading font-semibold ${
-                  engine.status === 'In Transit' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
-                  : engine.status === 'Completed' ? 'bg-primary/15 text-primary border border-primary/25'
-                  : 'bg-blue-500/15 text-blue-900 border border-blue-500/25'
+                  engine.status === 'In Transit' ? 'bg-amber-500/20 text-amber-200 border border-amber-400/40'
+                  : engine.status === 'Completed' ? 'bg-sky-500/20 text-sky-200 border border-sky-400/40'
+                  : 'bg-sky-500/20 text-sky-200 border border-sky-400/40'
                 }`}>{engine.status}</span>
                 <div className="flex items-center gap-1.5 text-sm font-body text-muted-foreground bg-white/5 px-3 py-1.5 rounded-xl">
                   <Clock className="w-3.5 h-3.5" />{engine.lastUpdated}
@@ -628,7 +441,6 @@ const EngineDetail = () => {
           </AnimatePresence>
         </div>
 
-        <PartLifecycleDialog part={selectedPart} open={isPartDialogOpen} onOpenChange={setIsPartDialogOpen} />
       </div>
     </AppLayout>
   );

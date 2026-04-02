@@ -10,7 +10,7 @@ export type UserPreferences = {
 const DEFAULT_PREFS: UserPreferences = {
   fontSize: "medium",
   portalView: "default",
-  isDarkTheme: false,
+  isDarkTheme: true,
 };
 
 const keyForUser = (userKey: string) => `gem-prefs:${userKey}`;

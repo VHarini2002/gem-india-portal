@@ -5,14 +5,14 @@ import { MapPin, Truck, Clock, ArrowRight } from 'lucide-react';
 import { getEngineHealth } from '@/lib/engineIntelligence';
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
-  'In Transit': { label: 'In Transit', cls: 'bg-warning/15 text-warning border border-warning/25' },
-  'In Repair': { label: 'In Repair', cls: 'bg-primary/15 text-primary border border-primary/25' },
-  'In Storage': { label: 'In Storage', cls: 'bg-success/15 text-success border border-success/25' },
-  'Disassembly': { label: 'Disassembly', cls: 'bg-purple-500/15 text-purple-500 border border-purple-500/25' },
-  'Inspection': { label: 'Inspection', cls: 'bg-orange-500/15 text-orange-500 border border-orange-500/25' },
-  'Ready for Release': { label: 'Ready', cls: 'bg-success/15 text-success border border-success/25' },
-  'Completed': { label: 'Completed', cls: 'bg-primary/15 text-primary border border-primary/25' },
-  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-500/15 text-teal-500 border border-teal-500/25' },
+  'In Transit': { label: 'In Transit', cls: 'bg-amber-500/20 text-amber-200 border border-amber-400/40 shadow-[0_0_0_1px_rgba(245,158,11,0.08)]' },
+  'In Repair': { label: 'In Repair', cls: 'bg-sky-500/20 text-sky-200 border border-sky-400/40 shadow-[0_0_0_1px_rgba(56,189,248,0.08)]' },
+  'In Storage': { label: 'In Storage', cls: 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 shadow-[0_0_0_1px_rgba(52,211,153,0.08)]' },
+  'Disassembly': { label: 'Disassembly', cls: 'bg-violet-500/20 text-white-200 border border-violet-400/40 shadow-[0_0_0_1px_rgba(167,139,250,0.08)]' },
+  'Inspection': { label: 'Inspection', cls: 'bg-orange-500/20 text-orange-200 border border-orange-400/40 shadow-[0_0_0_1px_rgba(251,146,60,0.08)]' },
+  'Ready for Release': { label: 'Ready', cls: 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 shadow-[0_0_0_1px_rgba(52,211,153,0.08)]' },
+  'Completed': { label: 'Completed', cls: 'bg-sky-500/20 text-sky-200 border border-sky-400/40 shadow-[0_0_0_1px_rgba(56,189,248,0.08)]' },
+  'Preservation Active': { label: 'Preservation', cls: 'bg-teal-500/20 text-teal-200 border border-teal-400/40 shadow-[0_0_0_1px_rgba(45,212,191,0.08)]' },
 };
 
 const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
@@ -33,37 +33,12 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="font-body text-xs text-muted-foreground">ESN</p>
           <p className="font-heading text-sm font-bold text-primary mt-0.5">{engine.esn}</p>
         </div>
         <div className="flex items-start gap-2">
           {/* Health score mini-ring */}
           <div className="flex flex-col items-end">
-            <div className="flex items-center gap-2">
-              <div className="relative w-9 h-9">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 42}`}
-                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - health.score / 100)}`}
-                    className={`${healthColor} transition-all`}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className={`text-[10px] font-heading font-bold ${healthColor}`}>{health.score}</span>
-                </div>
-              </div>
-              <span className={`text-[10px] font-body ${health.isAtRisk ? 'text-warning' : 'text-muted-foreground'}`}>
-                {health.driver}
-              </span>
-            </div>
+
             <span className={`mt-2 text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${status.cls}`}>
               {status.label}
             </span>
@@ -110,13 +85,7 @@ const EngineCard = ({ engine, index }: { engine: Engine; index: number }) => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-3 border-t border-border/50">
-        <div className="flex items-center gap-1.5 text-xs font-body text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          <span>{engine.lastUpdated}</span>
-        </div>
-        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-      </div>
+
     </motion.div>
   );
 };

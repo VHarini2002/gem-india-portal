@@ -136,7 +136,7 @@ const CalendarPage = ({ onClose }: CalendarPageProps) => {
             <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-primary" />
             </div>
-            <h2 className="font-heading text-base font-bold text-foreground">Operations Calendar</h2>
+            <h2 className="font-heading text-base font-bold text-foreground">CALENDAR</h2>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">

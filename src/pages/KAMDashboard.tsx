@@ -526,10 +526,10 @@ const KAMDashboard = () => {
         {activePanel === 'settings' && (
           <SettingsPage
             onClose={() => setActivePanel(null)}
-            fontSize={fontSize}
-            setFontSize={setFontSize}
-            portalView={portalView}
-            setPortalView={setPortalView}
+            setTheme={(dark) => {
+              setIsDarkTheme(dark);
+              // KAMDashboard currently keeps theme in local state only.
+            }}
           />
         )}
         {activePanel === 'notifications' && <NotificationsPage onClose={() => setActivePanel(null)} />}

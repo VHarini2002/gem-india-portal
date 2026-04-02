@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEM India | SPI Aviation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0b;
+            --primary-yellow: #F5C000;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(35px);
+        }
+
+        .radial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(10, 10, 11, 0.8) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .logo-img {
+            height: 80px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .critical-items-btn {
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border: 0.5px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            outline: none;
+            padding: 0;
+        }
+
+        .critical-items-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .critical-items-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255,255,255,0.9);
+        }
+
+        .critical-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: 2px solid #111113;
+        }
+
+        .sign-out-btn {
+            background: rgba(255,255,255,0.05);
+            border: 0.5px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .sign-out-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #landing-content, #help-content {
+            position: absolute;
+            top: 64px;
+            bottom: 88px;
+            left: 0;
+            right: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 24px 32px;
+            animation: viewFadeIn 0.4s ease forwards;
+        }
+
+        #landing-content::-webkit-scrollbar, #help-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        @keyframes viewFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==== Help View CSS ==== */
+        .help-header { text-align: center; margin-bottom: 32px; }
+        .help-pre-label {
+            font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.3); text-transform: uppercase;
+            animation: fadeUp 0.8s ease forwards; animation-delay: 0.05s; opacity: 0;
+        }
+        .help-title {
+            font-family: 'DM Serif Display', serif; font-size: 48px; color: #fff; margin-top: 8px; margin-bottom: 0;
+            animation: fadeUp 0.8s ease forwards; animation-delay: 0.15s; opacity: 0;
+        }
+        .help-subtext {
+            font-size: 15px; color: rgba(255,255,255,0.4); margin-top: 8px;
+            animation: fadeUp 0.8s ease forwards; animation-delay: 0.25s; opacity: 0;
+        }
+
+        .help-top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+            align-items: stretch;
+            animation: fadeUp 0.8s ease forwards;
+            animation-delay: 0.35s;
+            opacity: 0;
+        }
+
+        @media (max-width: 700px) {
+            .help-top-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .help-cam-card, .help-card {
+            background: rgba(255,255,255,0.03); border-radius: 20px; position: relative;
+        }
+
+        .help-cam-card { border: 0.5px solid rgba(245,192,0,0.2); padding: 28px; display: flex; flex-direction: column; height: 100%; }
+        .help-card { border: 0.5px solid rgba(255,255,255,0.08); padding: 28px; display: flex; flex-direction: column;}
+
+        .corner-marker { position: absolute; font-size: 11px; color: rgba(245,192,0,0.2); line-height: 1; }
+
+        .cam-top { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
+        .cam-avatar {
+            width: 56px; height: 56px; background: rgba(245,192,0,0.1); border: 1px solid rgba(245,192,0,0.25);
+            border-radius: 50%; color: #F5C000; font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        .cam-name { font-size: 16px; font-weight: 500; color: #fff; }
+        .cam-role { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+        .cam-status { display: flex; gap: 6px; align-items: center; margin-top: 6px; font-size: 11px; color: rgba(74,222,128,0.7); }
+        .cam-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+
+        .help-divider { margin-bottom: 18px; border-top: 0.5px solid rgba(255,255,255,0.06); }
+
+        .cam-contact-row { display: flex; gap: 12px; align-items: center; margin-bottom: 13px; font-size: 13px; }
+        .cam-contact-row svg { width: 16px; height: 16px; stroke: rgba(255,255,255,0.3); stroke-width: 1.5; fill: none; flex-shrink: 0;}
+
+        .cam-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .cam-btn-primary, .cam-btn-secondary {
+            flex: 1; height: 40px; border-radius: 100px; font-size: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
+        }
+        .feedback-submit-container { padding-top: 12px; margin-top: auto; }
+        .feedback-submit {
+            width: 100%; height: 42px; border-radius: 100px; 
+            background: rgba(245,192,0,0.1); border: 0.5px solid rgba(245,192,0,0.3); color: #F5C000; 
+            font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+        }
+        .feedback-submit:hover { background: rgba(245,192,0,0.18); transform: scale(1.01); }
+        .cam-btn-primary { background: rgba(245,192,0,0.1); border: 0.5px solid rgba(245,192,0,0.3); color: #F5C000; }
+        .cam-btn-primary:hover { background: rgba(245,192,0,0.18); }
+        .cam-btn-secondary { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); }
+        .cam-btn-secondary:hover { background: rgba(255,255,255,0.09); }
+
+        .cam-response-strip { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .cam-response-left { display: flex; gap: 8px; align-items: center; font-size: 12px; color: rgba(255,255,255,0.4); }
+        .cam-response-right { font-size: 12px; color: rgba(74,222,128,0.7); font-weight: 500; }
+
+        .help-section-label { font-size: 10px; letter-spacing: 0.15em; color: rgba(255,255,255,0.25); margin-bottom: 18px; }
+        
+        .feedback-fields { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        .feedback-select, .feedback-textarea {
+            width: 100%; background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: rgba(255,255,255,0.6); font-size: 13px; font-family: inherit; transition: all 0.2s;
+        }
+        .feedback-select { height: 42px; padding: 0 14px; appearance: none; cursor: pointer; }
+        .feedback-textarea { min-height: 120px; padding: 12px 14px; resize: none; color: #fff; flex: 1; }
+        .feedback-textarea::placeholder { color: rgba(255,255,255,0.2); }
+        .feedback-select:focus, .feedback-textarea:focus { border-color: rgba(245,192,0,0.4); box-shadow: 0 0 0 3px rgba(245,192,0,0.06); outline: none; }
+        
+        .help-faq {
+            width: 100%; border: 0.5px solid rgba(255,255,255,0.08); border-radius: 8px; margin-bottom: 16px;
+            animation: fadeUp 0.8s ease forwards; animation-delay: 0.45s; opacity: 0; background: rgba(255,255,255,0.02);
+        }
+
+        .faq-item { border-bottom: 0.5px solid rgba(255,255,255,0.08); transition: background 0.2s ease; overflow: hidden; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-item:hover { background: rgba(255,255,255,0.02); }
+        
+        .faq-q { padding: 20px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; color: #fff; }
+        .faq-icon-wrapper { position: relative; width: 24px; height: 24px; flex-shrink: 0; }
+        .faq-plus, .faq-minus { 
+            position: absolute; inset: 0; width: 100%; height: 100%; stroke: rgba(255,255,255,0.4); stroke-width: 2; fill: none;
+            transition: all 0.5s ease; stroke-linecap: round; stroke-linejoin: round;
+        }
+        .faq-minus { opacity: 0; transform: rotate(-90deg); }
+        .faq-title { font-size: 16px; font-weight: 500; transition: color 0.2s ease; }
+        
+        .faq-item.open .faq-plus { opacity: 0; transform: rotate(180deg); }
+        .faq-item.open .faq-minus { opacity: 1; transform: rotate(0deg); stroke: #F5C000; }
+        .faq-item.open .faq-title { color: #F5C000; }
+
+        .faq-a { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; max-height: 0; opacity: 0; transform: translateY(-5px); transition: all 0.35s ease; padding: 0 24px 0 64px; }
+        .faq-item.open .faq-a { max-height: 200px; padding-bottom: 24px; opacity: 1; transform: translateY(0); }
+
+        .pre-label {
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards;
+            animation-delay: 0.1s;
+        }
+
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(48px, 8vw, 84px);
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            margin-bottom: 12px;
+        }
+
+        .welcome-line {
+            display: block;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards;
+            animation-delay: 0.2s;
+        }
+
+        .customer-name {
+            display: block;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards;
+            animation-delay: 0.4s;
+        }
+
+        .subtext {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards;
+            animation-delay: 0.6s;
+        }
+
+        /* ============================================
+           SPOTLIGHT CARDS
+           - Solid black fill
+           - Localized border glow at cursor position
+           - NO mask-composite: uses z-index layering
+             (::after behind card, only border strip visible)
+           ============================================ */
+        .cards-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards;
+            animation-delay: 0.8s;
+        }
+
+        .glow-card {
+            position: relative;
+            min-width: 160px;
+            padding: 28px 24px;
+            border-radius: 14px;
+            background: #111113;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            text-align: left;
+            cursor: default;
+            /* CRITICAL: overflow must be visible so ::after shows beyond card edge */
+            overflow: visible;
+        }
+
+        /* Border glow layer — sits BEHIND the card.
+           The card's solid bg covers the interior,
+           so only the border strip (3px) is visible.
+           Radial gradient at cursor position means
+           glow is localized to where the pointer is. */
+        .glow-card::after {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 17px;
+            background: radial-gradient(
+                150px circle at var(--mx, -100px) var(--my, -100px),
+                rgba(245, 192, 0, 0.8) 0%,
+                rgba(245, 192, 0, 0.3) 25%,
+                rgba(245, 192, 0, 0.05) 50%,
+                transparent 70%
+            );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Soft bloom behind the border glow for extra depth */
+        .glow-card::before {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            border-radius: 22px;
+            background: radial-gradient(
+                200px circle at var(--mx, -100px) var(--my, -100px),
+                rgba(245, 192, 0, 0.15) 0%,
+                rgba(245, 192, 0, 0.05) 35%,
+                transparent 65%
+            );
+            z-index: -2;
+            pointer-events: none;
+            filter: blur(8px);
+        }
+
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-number {
+            font-family: 'DM Serif Display', serif;
+            font-size: 48px;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-status {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Buttons */
+        .cta-container {
+            display: flex;
+            gap: 16px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards;
+            animation-delay: 1s;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-yellow);
+            color: #0a0a0b;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.03);
+            background-color: #ffc800;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-ghost:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .cards-container { flex-wrap: wrap; }
+            .glow-card { width: calc(50% - 10px); min-width: 180px; flex: none; }
+        }
+
+        /* ============================================
+           FLOATING DOCK — macOS-style glass bar
+           ============================================ */
+        .dock-wrapper {
+            position: fixed;
+            bottom: 32px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            animation: dockFadeUp 0.9s ease forwards 1.8s;
+            pointer-events: none;
+        }
+
+        .dock-wrapper.visible {
+            pointer-events: auto;
+        }
+
+        .dock {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 0.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 10px 16px;
+            animation: dockFloat 4s ease-in-out infinite;
+        }
+
+        .dock-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.18s ease;
+            outline: none;
+        }
+
+        .dock-item svg {
+            width: 24px;
+            height: 24px;
+            stroke: rgba(255, 255, 255, 0.45);
+            stroke-width: 1.5;
+            fill: none;
+            transition: stroke 0.18s ease;
+        }
+
+        .dock-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .dock-item:hover svg {
+            stroke: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Active item — Dashboard */
+        .dock-item.active {
+            background: rgba(245, 192, 0, 0.08);
+        }
+
+        .dock-item.active svg {
+            stroke: #F5C000;
+        }
+
+        .dock-item.active:hover {
+            background: rgba(245, 192, 0, 0.14);
+        }
+
+        .dock-item.active:hover svg {
+            stroke: #F5C000;
+        }
+
+        /* Tooltip */
+        .dock-item::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .dock-item:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes dockFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes dockFadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        }
+        /* ============================================
+           ASK AI — Bottom-right Pill + Chat Window
+           ============================================ */
+        @property --orb-angle {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        @keyframes rotateBorder {
+            to { --orb-angle: 360deg; }
+        }
+
+        /* Pill — bottom-right, same baseline as dock */
+        .ai-wrapper {
+            position: fixed;
+            bottom: 32px;
+            right: 48px;
+            left: auto;
+            z-index: 60;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 2.0s;
+        }
+
+        .ai-pill {
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 0.5px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            cursor: pointer;
+            transition: background 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .ai-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-pill:hover .ai-pill-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ai-pill-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.05em;
+            transition: color 0.18s ease;
+        }
+
+        /* Orb */
+        .ai-orb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+            background:
+                conic-gradient(from calc(var(--orb-angle) * 2) at 30% 70%, hsl(45, 90%, 70%), transparent 30% 70%, hsl(45, 90%, 70%)),
+                conic-gradient(from calc(var(--orb-angle) * -1) at 70% 30%, hsl(35, 80%, 55%), transparent 40% 60%, hsl(35, 80%, 55%));
+            filter: blur(1.5px) contrast(1.8);
+            animation: rotateBorder 20s linear infinite;
+        }
+
+        .ai-orb.pill-orb {
+            width: 24px;
+            height: 24px;
+            filter: blur(0.5px) contrast(1.2);
+            background: conic-gradient(
+                from var(--orb-angle),
+                hsl(45, 100%, 70%),
+                hsl(35, 90%, 55%),
+                hsl(50, 80%, 50%),
+                hsl(45, 100%, 70%)
+            );
+        }
+
+        /* Chat Window — separate from pill */
+        .chat-window {
+            position: fixed;
+            bottom: 96px;
+            right: 48px;
+            width: 360px;
+            height: 460px;
+            z-index: 60;
+            display: none;
+        }
+
+        .chat-window.open {
+            display: block;
+            animation: chatOpen 0.35s ease-out forwards;
+        }
+
+        .chat-window.closing {
+            animation: chatClose 0.25s ease-in forwards;
+        }
+
+        @keyframes chatOpen {
+            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes chatClose {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(16px) scale(0.97); }
+        }
+
+        /* Outer shell — rotating gold border */
+        .chat-outer {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            padding: 2px;
+            background: conic-gradient(
+                from var(--orb-angle),
+                rgba(245, 192, 0, 0.8),
+                rgba(245, 192, 0, 0.05) 40%,
+                rgba(245, 192, 0, 0.8)
+            );
+            animation: rotateBorder 6s linear infinite;
+        }
+
+        /* Inner card */
+        .chat-inner {
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header */
+        .chat-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-title {
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.18s ease;
+            line-height: 1;
+        }
+
+        .chat-close:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: none;
+        }
+
+        .chat-messages::-webkit-scrollbar { display: none; }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0;
+            transform: translateY(6px);
+            animation: chatMsgIn 0.3s ease forwards;
+        }
+
+        .chat-msg.assistant {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 4px 14px 14px 14px;
+        }
+
+        .chat-msg.user {
+            align-self: flex-end;
+            background: rgba(245, 192, 0, 0.1);
+            border: 0.5px solid rgba(245, 192, 0, 0.2);
+            color: #F5C000;
+            border-radius: 14px 4px 14px 14px;
+        }
+
+        @keyframes chatMsgIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typing indicator */
+        .chat-typing {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px;
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px 14px 14px 14px;
+        }
+
+        .chat-typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #F5C000;
+            animation: chatTypePulse 1.4s ease-in-out infinite;
+        }
+
+        .chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes chatTypePulse {
+            0%, 60%, 100% { opacity: 0.2; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Input row */
+        .chat-input-row {
+            height: 52px;
+            border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            color: #fff;
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            padding: 0 16px;
+            height: 36px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-input:focus {
+            border-color: rgba(245, 192, 0, 0.4);
+            box-shadow: 0 0 0 3px rgba(245, 192, 0, 0.06);
+        }
+
+        .chat-send {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(245, 192, 0, 0.12);
+            border: 0.5px solid rgba(245, 192, 0, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.18s ease;
+        }
+
+        .chat-send:hover {
+            background: rgba(245, 192, 0, 0.22);
+        }
+
+        .chat-send svg {
+            width: 16px;
+            height: 16px;
+            stroke: #F5C000;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        /* Floating particles */
+        .chat-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            background: rgba(245, 192, 0, 0.2);
+            pointer-events: none;
+            animation: chatParticle var(--dur, 6s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes chatParticle {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            15% { opacity: 0.6; }
+            85% { opacity: 0.3; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+
+        /* ============================================
+           NOTIFICATION BANNERS
+           ============================================ */
+        .banner-stack {
+            position: fixed;
+            top: 104px;
+            right: 24px;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 320px;
+            transition: all 0.3s ease;
+        }
+
+        .banner {
+            position: relative;
+            background: rgba(10, 10, 11, 0.85);
+            border: 0.5px solid;
+            border-radius: 14px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 14px;
+            width: 320px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            animation: bannerIn 0.5s ease forwards;
+            overflow: hidden;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(
+                105deg,
+                transparent 40%,
+                rgba(255, 255, 255, 0.03) 50%,
+                transparent 60%
+            );
+            pointer-events: none;
+        }
+
+        @keyframes bannerIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes bannerOut {
+            to {
+                opacity: 0;
+                transform: translateX(16px);
+                max-height: 0;
+                margin: 0;
+                padding: 0;
+                border-width: 0;
+            }
+        }
+
+        .banner.dismissing {
+            animation: bannerOut 0.3s ease forwards;
+        }
+
+        .banner-icon-bg {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .banner-icon-bg svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .banner-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .banner-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .banner-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .banner-cta {
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            padding: 5px 12px;
+            border-radius: 100px;
+            background: transparent;
+            border: 0.5px solid;
+            cursor: pointer;
+            transition: background 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .banner-cta:hover {
+            background: var(--hover-bg) !important;
+        }
+
+        .banner-close {
+            width: 16px;
+            height: 16px;
+            color: rgba(255, 255, 255, 0.25);
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: color 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .banner-close:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .banner-close svg {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .banner-all-clear {
+            background: rgba(74, 222, 128, 0.06);
+            border: 0.5px solid rgba(74, 222, 128, 0.2);
+            border-radius: 100px;
+            padding: 6px 14px;
+            font-size: 11px;
+            color: rgba(74, 222, 128, 0.7);
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            animation: fadeIn 0.4s ease forwards;
+            align-self: flex-end;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
+        .banner-all-clear.hiding {
+            animation: fadeOut 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="radial-overlay"></div>
+
+    <nav>
+        <div class="logo-container">
+            <img src="assets/gem-logo.png" alt="Global Engine Maintenance India" class="logo-img">
+        </div>
+        <div class="nav-right">
+            <button class="critical-items-btn" id="criticalItemsBtn">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <div class="critical-indicator"></div>
+            </button>
+            <button class="sign-out-btn">Sign out</button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- LANDING VIEW -->
+        <div id="landing-content">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; width:100%; text-align:center;">
+                <div class="pre-label">SPI Aviation</div>
+                <h1>
+                    <span class="welcome-line">Welcome back,</span>
+                    <span class="customer-name">Kiran</span>
+                </h1>
+                <div class="subtext">12 engines total &bull; Updated just now</div>
+
+                <div class="cards-container">
+                    <div class="glow-card">
+                        <span class="card-label">Total Engines</span>
+                        <span class="card-number">12</span>
+                        <span class="card-status">Active</span>
+                    </div>
+                    <div class="glow-card">
+                        <span class="card-label">In Transit</span>
+                        <span class="card-number">3</span>
+                        <span class="card-status">En Route</span>
+                    </div>
+                    <div class="glow-card">
+                        <span class="card-label">In Repair</span>
+                        <span class="card-number">6</span>
+                        <span class="card-status">Workshop</span>
+                    </div>
+                    <div class="glow-card">
+                        <span class="card-label">In Storage</span>
+                        <span class="card-number">3</span>
+                        <span class="card-status">Available</span>
+                    </div>
+                </div>
+
+                <div class="cta-container">
+                    <a href="#" class="btn btn-primary">View My Engines &rarr;</a>
+                    <a href="#" class="btn btn-ghost">Contact KAM</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- HELP VIEW -->
+        <div id="help-content" style="display: none;">
+            <div class="help-header">
+                <div class="help-pre-label">HELP & SUPPORT</div>
+                <h2 class="help-title">How can we help?</h2>
+                <div class="help-subtext">Your Customer Account Manager is your single point of contact for everything.</div>
+            </div>
+
+            <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
+                <!-- Section B - Top Row -->
+                <div class="help-top-row">
+                    <!-- Left column - CAM Contact -->
+                    <div class="help-cam-card">
+                        <div class="corner-marker" style="top: -6px; left: -6px;">+</div>
+                        <div class="corner-marker" style="top: -6px; right: -6px;">+</div>
+                        <div class="corner-marker" style="bottom: -6px; left: -6px;">+</div>
+                        <div class="corner-marker" style="bottom: -6px; right: -6px;">+</div>
+
+                        <div class="cam-top">
+                            <div class="cam-avatar">JR</div>
+                            <div class="cam-info">
+                                <div class="cam-name">James Reynolds</div>
+                                <div class="cam-role">Customer Account Manager</div>
+                                <div class="cam-status">
+                                    <div class="cam-status-dot"></div>
+                                    <span>Available now</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="help-divider"></div>
+
+                        <div class="cam-contact-row">
+                            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span style="color: #F5C000;">j.reynolds@antigravity.aero</span>
+                        </div>
+                        <div class="cam-contact-row">
+                            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span style="color: rgba(255,255,255,0.6);">+1 (305) 412 7890</span>
+                        </div>
+                        <div class="cam-contact-row">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span style="color: rgba(255,255,255,0.4);">Mon–Fri, 08:00–18:00 EST</span>
+                        </div>
+
+                        <div class="cam-actions">
+                            <button class="cam-btn-primary">Send Email</button>
+                            <button class="cam-btn-secondary">Call Now</button>
+                        </div>
+
+                        <div class="cam-response-strip">
+                            <div class="cam-response-left">
+                                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <span>Typical response time</span>
+                            </div>
+                            <div class="cam-response-right">Under 2 hours</div>
+                        </div>
+                    </div>
+
+                    <!-- Right column - Feedback Form -->
+                    <div class="help-card">
+                        <div class="help-section-label">SEND FEEDBACK</div>
+                        <div class="feedback-fields">
+                            <select class="feedback-select">
+                                <option value="" disabled selected>Select a subject...</option>
+                                <option>General Feedback</option>
+                                <option>Report a Portal Issue</option>
+                                <option>Request Additional Access</option>
+                                <option>Escalate to Management</option>
+                            </select>
+                            <textarea class="feedback-textarea" placeholder="Describe your feedback or issue..."></textarea>
+                        </div>
+                        <div class="feedback-submit-container">
+                            <button class="feedback-submit" onclick="submitFeedback(this)">Send Message</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section C - Full-width FAQ -->
+                <div class="help-faq">
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <div class="faq-icon-wrapper">
+                                    <svg class="faq-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg class="faq-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span class="faq-title">How do I approve findings from my engine inspection?</span>
+                            </div>
+                            <div class="faq-a">Go to the engine detail page, open the Findings tab, and click Approve or Request Review. Your CAM is notified immediately.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <div class="faq-icon-wrapper">
+                                    <svg class="faq-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg class="faq-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span class="faq-title">How long does a typical teardown take?</span>
+                            </div>
+                            <div class="faq-a">Most teardowns run 6–14 weeks depending on engine type and findings. Your live timeline is on the engine detail page.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <div class="faq-icon-wrapper">
+                                    <svg class="faq-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg class="faq-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span class="faq-title">What happens when parts need to be replaced?</span>
+                            </div>
+                            <div class="faq-a">Your CAM raises a PO confirmation request in the portal. You will get a banner notification to approve or query it.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <div class="faq-icon-wrapper">
+                                    <svg class="faq-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg class="faq-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span class="faq-title">Can I download reports for my records?</span>
+                            </div>
+                            <div class="faq-a">Yes. Inspection reports, findings logs, and cost summaries are downloadable anytime from the Files section.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <div class="faq-icon-wrapper">
+                                    <svg class="faq-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg class="faq-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span class="faq-title">Who do I contact if something is urgent?</span>
+                            </div>
+                            <div class="faq-a">Use Call Now above to reach your CAM directly. After-hours on-call details are shown on your CAM card.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Dock -->
+    <div class="dock-wrapper">
+        <div class="dock">
+            <button class="dock-item active" data-tooltip="Dashboard" data-view="landing" onclick="switchView('landing')">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Calendar">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Analytics">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Files">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Help" data-view="help" onclick="switchView('help')">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Settings">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <button class="dock-item" data-tooltip="Profile">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Banner Stack -->
+    <div class="banner-stack" id="bannerStack"></div>
+
+    <!-- GEM AI Pill -->
+    <div class="ai-wrapper">
+        <div class="ai-pill" id="aiPill">
+            <div class="ai-orb pill-orb"></div>
+            <span class="ai-pill-label">GEM AI</span>
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-outer">
+            <div class="chat-inner">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div class="ai-orb"></div>
+                        <span class="chat-header-title">GEM AI</span>
+                    </div>
+                    <button class="chat-close" id="chatClose">✕</button>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-row">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your engines...">
+                    <button class="chat-send" id="chatSend">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Floating Particles -->
+                <div class="chat-particle" style="left:8%;bottom:15%;--dur:5s;--delay:0s"></div>
+                <div class="chat-particle" style="left:22%;bottom:10%;--dur:6.5s;--delay:0.4s"></div>
+                <div class="chat-particle" style="left:38%;bottom:20%;--dur:4.5s;--delay:0.8s"></div>
+                <div class="chat-particle" style="left:52%;bottom:8%;--dur:7s;--delay:1.2s"></div>
+                <div class="chat-particle" style="left:65%;bottom:18%;--dur:5.5s;--delay:1.6s"></div>
+                <div class="chat-particle" style="left:78%;bottom:12%;--dur:6s;--delay:2s"></div>
+                <div class="chat-particle" style="left:90%;bottom:22%;--dur:4.8s;--delay:2.4s"></div>
+                <div class="chat-particle" style="left:15%;bottom:25%;--dur:7.5s;--delay:2.8s"></div>
+                <div class="chat-particle" style="left:45%;bottom:5%;--dur:5.2s;--delay:3.2s"></div>
+                <div class="chat-particle" style="left:72%;bottom:28%;--dur:6.8s;--delay:3.6s"></div>
+                <div class="chat-particle" style="left:30%;bottom:30%;--dur:8s;--delay:4s"></div>
+                <div class="chat-particle" style="left:85%;bottom:6%;--dur:5.8s;--delay:4.4s"></div>
+                <div class="chat-particle" style="left:55%;bottom:15%;--dur:6.2s;--delay:4.8s"></div>
+                <div class="chat-particle" style="left:10%;bottom:8%;--dur:7.2s;--delay:5.2s"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== POINTER TRACKING =====
+        // Tracks cursor position relative to each card.
+        // --mx/--my default to -100px (off-screen) so no glow shows initially.
+        document.addEventListener('pointermove', (e) => {
+            document.querySelectorAll('.glow-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mx', x + 'px');
+                card.style.setProperty('--my', y + 'px');
+            });
+        });
+
+        // ===== BEAM BACKGROUND ANIMATION =====
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, beams = [];
+
+        function init() { resize(); createBeams(); animate(); }
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        class Beam {
+            constructor(isGold = false) { this.isGold = isGold; this.reset(); }
+            reset() {
+                this.x = Math.random() * width * 1.5 - width * 0.25;
+                this.y = height + Math.random() * 500;
+                this.length = 300 + Math.random() * 600;
+                this.speed = 0.5 + Math.random() * 1.5;
+                if (this.isGold) {
+                    this.hue = 45 + Math.random() * 10;
+                    this.baseOpacity = 0.4 + Math.random() * 0.4;
+                    this.thickness = 20 + Math.random() * 20;
+                    this.lightness = 75;
+                } else {
+                    this.hue = 190 + Math.random() * 30;
+                    this.baseOpacity = 0.2 + Math.random() * 0.2;
+                    this.thickness = 10 + Math.random() * 15;
+                    this.lightness = 60;
+                }
+                this.opacity = 0;
+                this.pulse = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.01 + Math.random() * 0.02;
+            }
+            update() {
+                this.y -= this.speed;
+                this.pulse += this.pulseSpeed;
+                const p = (Math.sin(this.pulse) + 1) / 2;
+                this.opacity = this.baseOpacity * (0.8 + p * 0.2);
+                if (this.y < -this.length) this.reset();
+            }
+            draw() {
+                const g = ctx.createLinearGradient(this.x, this.y, this.x + this.length * 0.3, this.y - this.length);
+                const c = `hsla(${this.hue}, 90%, ${this.lightness}%, ${this.opacity})`;
+                g.addColorStop(0, 'transparent'); g.addColorStop(0.5, c); g.addColorStop(1, 'transparent');
+                ctx.save(); ctx.beginPath(); ctx.strokeStyle = g;
+                ctx.lineWidth = this.thickness; ctx.lineCap = 'round';
+                ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + this.length * 0.3, this.y - this.length);
+                ctx.stroke(); ctx.restore();
+            }
+        }
+
+        function createBeams() {
+            beams = [];
+            for (let i = 0; i < 12; i++) beams.push(new Beam(false));
+            for (let i = 0; i < 10; i++) beams.push(new Beam(true));
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            beams.forEach(b => { b.update(); b.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => { resize(); createBeams(); });
+        init();
+
+        // ===== ASK AI COMPONENT =====
+        const aiPill = document.getElementById('aiPill');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatClose = document.getElementById('chatClose');
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        const chatMessages = document.getElementById('chatMessages');
+        let chatOpen = false;
+
+        function openChat() {
+            if (chatOpen) return;
+            chatOpen = true;
+            chatWindow.classList.remove('closing');
+            chatWindow.classList.add('open');
+            // Add opening AI message
+            if (chatMessages.children.length === 0) {
+                addMessage('assistant', 'Hello. I have full visibility into your engines and open items. What would you like to review?');
+            }
+            setTimeout(() => chatInput.focus(), 350);
+        }
+
+        function closeChat() {
+            if (!chatOpen) return;
+            chatOpen = false;
+            chatWindow.classList.add('closing');
+            setTimeout(() => {
+                chatWindow.classList.remove('open', 'closing');
+            }, 250);
+        }
+
+        function addMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg ' + role;
+            msg.textContent = text;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleSend() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            addMessage('user', text);
+            chatInput.value = '';
+
+            // Show typing indicator
+            const typing = document.createElement('div');
+            typing.className = 'chat-typing';
+            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simulated AI response
+            setTimeout(() => {
+                typing.remove();
+                addMessage('assistant', 'I can see 3 active engines in the facility. CFM56-7B is approaching its April 12th inspection milestone and has 2 open items awaiting your approval. Would you like to review those now?');
+            }, 1200);
+        }
+
+        aiPill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (chatOpen) closeChat(); else openChat();
+        });
+
+        chatClose.addEventListener('click', closeChat);
+
+        chatSend.addEventListener('click', handleSend);
+
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // Click outside to close
+        document.addEventListener('click', (e) => {
+            if (chatOpen && !chatWindow.contains(e.target) && !aiPill.contains(e.target)) {
+                closeChat();
+            }
+        });
+
+        // Prevent clicks inside chat from closing
+        chatWindow.addEventListener('click', (e) => e.stopPropagation());
+
+        // ===== NOTIFICATION BANNERS =====
+        const bannersData = [
+            {
+                id: 1,
+                type: 'approval',
+                title: 'Approval Required',
+                description: 'CFM56-7B · Borescope findings need sign-off',
+                cta: 'Review Now',
+                delay: '0.2s',
+                colors: { border: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                icon: '<svg viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+            },
+            {
+                id: 2,
+                type: 'milestone',
+                title: 'Milestone in 3 Days',
+                description: 'GE90-115B · Final inspection due Apr 3',
+                cta: 'View Engine',
+                delay: '0.4s',
+                colors: { border: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                icon: '<svg viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"></rect><line x1="16" y1="2" x2="16" y2="6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="8" y1="2" x2="8" y2="6" stroke-linecap="round" stroke-linejoin="round"></line><line x1="3" y1="10" x2="21" y2="10" stroke-linecap="round" stroke-linejoin="round"></line></svg>'
+            },
+            {
+                id: 3,
+                type: 'parts',
+                title: 'Parts Hold',
+                description: 'V2500-A5 · 2 parts awaiting your PO confirmation',
+                cta: 'Confirm PO',
+                delay: '0.6s',
+                colors: { border: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                icon: '<svg viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>'
+            },
+            {
+                id: 4,
+                type: 'report',
+                title: 'Report Ready',
+                description: 'Monthly teardown summary is available to download',
+                cta: 'Download',
+                delay: '0.8s',
+                colors: { border: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                icon: '<svg viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>'
+            }
+        ];
+
+        const bannerStack = document.getElementById('bannerStack');
+        let activeBanners = bannersData.length;
+
+        function dismissBanner(banner) {
+            banner.classList.add('dismissing');
+            setTimeout(() => {
+                banner.remove();
+                activeBanners--;
+                if (activeBanners === 0) showAllClear();
+            }, 300);
+        }
+
+        function showAllClear() {
+            const pill = document.createElement('div');
+            pill.className = 'banner-all-clear';
+            pill.innerHTML = `✓ All caught up`;
+            bannerStack.appendChild(pill);
+            setTimeout(() => {
+                pill.classList.add('hiding');
+                setTimeout(() => pill.remove(), 300);
+            }, 3000);
+        }
+
+        function renderBanners() {
+            bannerStack.innerHTML = '';
+            activeBanners = bannersData.length;
+            
+            bannersData.forEach(data => {
+                const banner = document.createElement('div');
+                banner.className = 'banner';
+                banner.style.borderColor = data.colors.border;
+                banner.style.animationDelay = data.delay;
+
+                banner.innerHTML = `
+                    <div class="banner-icon-bg" style="background: ${data.colors.bg}; color: ${data.colors.text}">
+                        ${data.icon}
+                    </div>
+                    <div class="banner-content">
+                        <div class="banner-title">${data.title}</div>
+                        <div class="banner-desc">${data.description}</div>
+                    </div>
+                    <div class="banner-actions">
+                        <button class="banner-cta" style="border-color: ${data.colors.border}; color: ${data.colors.text}; --hover-bg: ${data.colors.text}1F">
+                            ${data.cta}
+                        </button>
+                        <button class="banner-close">
+                            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                `;
+
+                bannerStack.appendChild(banner);
+
+                let timer;
+                const startTimer = () => {
+                    timer = setTimeout(() => dismissBanner(banner), 12000);
+                };
+                const clearBannerTimer = () => clearTimeout(timer);
+
+                banner.addEventListener('mouseenter', clearBannerTimer);
+                banner.addEventListener('mouseleave', startTimer);
+                startTimer();
+
+                banner.querySelector('.banner-close').addEventListener('click', () => {
+                    clearBannerTimer();
+                    dismissBanner(banner);
+                });
+                banner.querySelector('.banner-cta').addEventListener('click', () => {
+                    clearBannerTimer();
+                    dismissBanner(banner);
+                });
+            });
+        }
+
+        renderBanners();
+
+        const criticalItemsBtn = document.getElementById('criticalItemsBtn');
+        criticalItemsBtn.addEventListener('click', () => {
+            renderBanners();
+        });
+
+        // ===== VIEW SWITCHING =====
+        let currentView = 'landing';
+
+        function switchView(view) {
+            if (currentView === view) return;
+            const landingContent = document.getElementById('landing-content');
+            const helpContent = document.getElementById('help-content');
+            
+            if (view === 'help') {
+                landingContent.style.display = 'none';
+                helpContent.style.display = 'flex';
+                // Reset help view animations by cloning
+                const newHelp = helpContent.cloneNode(true);
+                helpContent.parentNode.replaceChild(newHelp, helpContent);
+            } else {
+                landingContent.style.display = 'flex';
+                document.getElementById('help-content').style.display = 'none';
+                const newLanding = landingContent.cloneNode(true);
+                landingContent.parentNode.replaceChild(newLanding, landingContent);
+            }
+            
+            currentView = view;
+            updateDockActive(view);
+        }
+
+        function updateDockActive(view) {
+            document.querySelectorAll('.dock-item').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.dock-item[data-view="${view}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function submitFeedback(btn) {
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Sent';
+            btn.style.background = '#4ade80';
+            btn.style.color = '#111113';
+            btn.style.border = 'none';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.border = '';
+                btn.disabled = false;
+                document.querySelector('.feedback-select').value = "";
+                document.querySelector('.feedback-textarea').value = "";
+            }, 2000);
+        }
+
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        }
+    </script>
+</body>
+</html>
